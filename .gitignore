@@ -34,3 +34,11 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+*.log
+
+*.pem
+
+app/static/css/app/*.css
+
+GeoIP.dat

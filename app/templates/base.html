@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <title>Celery - Files</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link href="/static/css/app/index.css" rel='stylesheet' type="text/css">
+    <link href="/static/css/lib/elusive/elusive-webfont.css" rel='stylesheet' type="text/css">
+    {% block head %}
+    <title>{% block title %}{% endblock %} - My Webpage</title>
+    {% endblock %}
+    <style>
+        body {
+            background-image: url('http://colourlovers.com.s3.amazonaws.com/images/patterns/4188/4188571.png');
+            font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 20px;
+            color: #333333;
+            background-color: #ffffff;
+
+        }
+
+        a {
+            /*color: #85A7BA;*/
+        }
+
+    </style>
+</head>
+<body>
+    <div id="header">
+        <div id="header-navigation">
+            <div class="content clearfix">
+            </div>
+        </div>
+        <div id="user-options">
+            <div class="content row-fluid">
+                <a href="/user/me#edit">
+                    <div></div>
+                    <span>Profile</span>
+                </a>
+                <a href="/user/me#providers">
+                    <div></div>
+                    <span>Providers</span>
+                </a>
+                <a href="/user/me#pattern" >
+                    <div style="background-image: url('http://colourlovers.com.s3.amazonaws.com/images/patterns/1462/1462099.png')"></div>
+                    <span>Pattern</span>
+                </a>
+                <a href="/user/me#settings">
+                    <div style="color: #FFFFFF; font-size: 200%; line-height: 70px; margin-left: -5px; text-align: center;"><i class="icon-cog"></i></div>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div id="main">
+        {% block search %}{% endblock %}
+        {% block content %}
+        <div id="link-app" class="container-fluid">
+        </div>
+        <div id="file-app" class="container-fluid">
+        </div>
+        {% endblock %}
+    </div>
+    <div id="footer"></div>
+    {% include 'templates.html' %}
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700' rel='stylesheet' type='text/css'>
+    <script type="text/javascript" src="/static/js/polyfills.js"></script>
+    <script type="text/javascript" src="/static/js/lib/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="/static/js/lib/underscore.js"></script>
+    <script type="text/javascript" src="/static/js/lib/bootstrap.js"></script>
+    {% block scripts %}{% endblock %}
+</body>

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+        <div id="login-page" class="container-fluid">
+            {% for url in idp_urls %}
+                <a href="{{ url }}">
+                    <span>Login with Basecamp</span>
+                </a>
+            {% endfor %}
+        </div>
+{% endblock %}

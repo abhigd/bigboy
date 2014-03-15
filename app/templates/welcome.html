@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+        <div id="login-page" class="container-fluid">
+            <form action="/user/" method="POST">
+                <input type="hidden" name="invite_code" value="{{ invite_code }}" />
+                <button class="btn" type="submit">Create</button>
+            </form>
+        </div>
+{% endblock %}
