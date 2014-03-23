@@ -43,6 +43,9 @@ for region in regions:
 default_s3_conn = s3_connections[app.config.get('DEFAULT_AWS_REGION')]
 
 # Redis
+redis_host = app.config.get('REDIS_HOST', 'localhost')
+redis_port = app.config.get('REDIS_PORT', 6379)
+redis_db = app.config.get('REDIS_DB', 0)
 pool = redis.ConnectionPool(host='localhost', port=6379, db=0)
 redis_client = redis.Redis(connection_pool=pool)
 
