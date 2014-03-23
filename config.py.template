@@ -1,0 +1,86 @@
+CSRF_ENABLED = False
+SECRET_KEY = '1234'
+SESSION_COOKIE_NAME = "celery"
+PERMANENT_SESSION_LIFETIME = 1000
+HOSTNAME = "http://example.com"
+
+DEFAULT_COUNTRY = "IN"
+DEFAULT_AWS_REGION = "ap-southeast-1"
+OAUTH_PROVIDER_MAP = {
+    "basecamp": {
+        "CLIENT_ID" : 'xxx',
+        "CLIENT_SECRET" : 'xxx',
+        "REDIRECT_URI" : 'http://<hostname>/auth/basecamp',
+        "ACCESS_TOKEN_URL" : 'https://launchpad.37signals.com/authorization/token',
+        "AUTHORIZE_URL" : 'https://launchpad.37signals.com/authorization/new',
+        "BASE_URL" : 'https://example.basecamphq.com/'
+    },
+    "googleapps": {
+        "CLIENT_ID" : 'xxx.apps.googleusercontent.com',
+        "CLIENT_SECRET" : 'xxx',
+        "REDIRECT_URI" : 'http://<hostname>/auth/googleapps',
+        "ACCESS_TOKEN_URL" : 'https://accounts.google.com/o/oauth2/token',
+        "AUTHORIZE_URL" : 'https://accounts.google.com/o/oauth2/auth',
+        "BASE_URL" : '',
+        "SCOPES": ['https://www.googleapis.com/auth/plus.login',
+                   'https://www.googleapis.com/auth/plus.me',
+                   'https://www.googleapis.com/auth/userinfo.email']
+    }
+}
+
+AWS_ACCESS = 'AKxxx'
+AWS_SECRET = 'xxx'
+CF_PRIVATE_ID = "xxx"
+CF_PRIVATE_PEM_FILE = "pk-xxx.pem"
+
+BUCKET_MAP = {
+    "AF": {
+        "bucket": "xxx",
+        "anon_bucket": "xxx-anon",
+        "cf":"xxx.cloudfront.net",
+        "cf_id":"xxx",
+        "aws_region":"eu-west-1"
+    },
+    "AN": {
+        "bucket": "xxx",
+        "anon_bucket": "xxx-anon",
+        "cf":"xxx.cloudfront.net",
+        "cf_id":"xxx",
+        "aws_region":"eu-west-1"
+    },
+    "AS": {
+        "bucket": "xxx",
+        "anon_bucket": "xxx-anon",
+        "cf":"xxx.cloudfront.net",
+        "cf_id": "xxx",
+        "aws_region":"ap-southeast-1"
+    },
+    "OC": {
+        "bucket": "xxx",
+        "anon_bucket": "xxx-anon",
+        "cf":"xxx.cloudfront.net",
+        "cf_id": "xxx",
+        "aws_region":"ap-southeast-1"
+    },
+    "EU": {
+        "bucket": "xxx",
+        "anon_bucket": "xxx-anon",
+        "cf":"xxx.cloudfront.net",
+        "cf_id": "xxx",
+        "aws_region":"eu-west-1"
+    },
+    "SA": {
+        "bucket": "xxx",
+        "anon_bucket": "xxx-anon",
+        "cf":"xxx.cloudfront.net",
+        "cf_id": "xxx",
+        "aws_region":"us-east-1"
+    },
+    "NA": {
+        "bucket": "xxx",
+        "anon_bucket": "xxx-anon",
+        "cf":"xxx.cloudfront.net",
+        "cf_id": "xxx",
+        "aws_region":"us-east-1"
+    }
+}

@@ -32,7 +32,6 @@ login_manager.login_view = "login"
 AWS_ACCESS = app.config.get('AWS_ACCESS')
 AWS_SECRET = app.config.get('AWS_SECRET')
 
-import time
 # S3
 regions = set([x["aws_region"] for x in app.config.get('BUCKET_MAP').values()])
 s3_connections = {}
@@ -43,7 +42,6 @@ for region in regions:
 
 default_s3_conn = s3_connections[app.config.get('DEFAULT_AWS_REGION')]
 
-print time.time()
 # Redis
 pool = redis.ConnectionPool(host='localhost', port=6379, db=0)
 redis_client = redis.Redis(connection_pool=pool)
