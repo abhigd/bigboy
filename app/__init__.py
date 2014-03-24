@@ -1,3 +1,7 @@
+import os
+import base64
+import json
+
 import redis
 
 import boto
@@ -19,6 +23,11 @@ import pygeoip
 
 import logging
 logging.basicConfig(filename="bigboy.log", level=logging.INFO)
+
+if os.environ.get("bigboy_config", None):
+    config_env = base64.b64decode(os.environ.get("bigboy_config"))
+    with open("config.py", "w") as f:
+        f.write(config_env)
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
