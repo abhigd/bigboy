@@ -25,7 +25,7 @@
           </ul>
           <div class="btn-group navbar-right">
             <button id="upload-btn" class="upload-btn navbar-btn btn btn-info">
-                <i class="icon-upload"></i>
+                <i class="el-icon-upload"></i>
                 <span>Upload</span>
             </button>
           </div>
@@ -37,16 +37,16 @@
         <div class="col-xs-7 col-md-9">
           <div class="btn-group">
             <button id="select-toggle" class="btn navbar-btn" href="#">
-                <i class="icon-check-empty file-select">
+                <i class="el-icon-check-empty file-select">
                     <input type="checkbox" style="display: none">
                 </i>
             </button>
             <button id="delete-btn" class="btn navbar-btn disabled">
-                <i class="icon-trash"></i>
+                <i class="el-icon-trash"></i>
                 <span style="display: none">Delete</span>
             </button>
             <button id="share-btn" class="btn navbar-btn disabled">
-                <i class="icon-share-alt"></i>
+                <i class="el-icon-share-alt"></i>
                 <span class="hidden-xs">Share</span>
             </button>
           </div>
@@ -55,12 +55,12 @@
           <div class="" style="text-align: right">
             <div class="btn-group">
               <button id="prev" type="button" class="btn navbar-btn btn-info">
-              <i class="icon-chevron-left"></i>
+              <i class="el-icon-chevron-left"></i>
               <span class="hidden-xs">Previous</span>
               </button>
               <button id="next" type="button" class="btn navbar-btn btn-info">
               <span class="hidden-xs">Next</span>
-              <i class="icon-chevron-right"></i>
+              <i class="el-icon-chevron-right"></i>
               </button>
             </div>
           </div>
@@ -85,7 +85,7 @@
 
 <script type="text/template" id="file-template">
     <div class="col-xs-1 col-sm-1 col-md-1 file-selector">
-        <i class="icon-check-empty file-select" ><input type="checkbox" data-id="<%= id %>" style="display: none"/>
+        <i class="el-icon-check-empty file-select" ><input type="checkbox" data-id="<%= id %>" style="display: none"/>
         </i>
     </div>
 
@@ -121,7 +121,7 @@
           <div class="col-xs-2">
             <div class="input-group">
               <button id="delete-shares-button" class="btn btn-default disabled navbar-btn">
-                  <i class="icon-trash"></i>
+                  <i class="el-icon-trash"></i>
                   <span class="hidden-xs">Delete</span>
               </button>
             </div>
@@ -222,7 +222,7 @@
 
 <script type="text/template" id="file-share-link-template">
     <div class="file-share-selector">
-        <i class="icon-check-empty file-share-select" >
+        <i class="el-icon-check-empty file-share-select" >
             <input type="checkbox" data-id="<%= id %>" style="display: none"/>
         </i>
     </div>
@@ -237,7 +237,7 @@
         </div>
     </div>
     <div class="file-share-remove">
-        <i class="icon-remove"></i>
+        <i class="el-icon-remove"></i>
     </div>
 </script>
 
@@ -267,17 +267,17 @@
                   <div class="btn-group navbar-btn upload-indicator navbar-right">
                       <button class="upload-btn btn btn-default upload-snippet-count">
                           <input type="file" class="file-input" />
-                          <i class="icon-upload"></i>
+                          <i class="el-icon-upload"></i>
                           <span class="btn-label hidden-xs">Upload</span>
                           <div class="progress">
                               <div style="width: 0%;" class="progress-bar"></div>
                           </div>
                       </button>
                       <button id="link-search-btn" class="btn btn-default">
-                          <i class="icon-search"></i>
+                          <i class="el-icon-search"></i>
                       </button>
                       <button id="link-configure-btn" class="btn btn-success">
-                          <i class="icon-cog"></i>
+                          <i class="el-icon-cog"></i>
                       </button>
                   </div>
               </div>
@@ -296,11 +296,11 @@
 <script type="text/template" id="link-target-template">
     <div class="target-title">
         <a href="<%= url %>"><%= title %></a>
-        <i class="icon-trash target-delete" style=""></i>
+        <i class="el-icon-trash target-delete" style=""></i>
     </div>
     <div class="target-meta">
         <div class="target-type">
-            <i class="icon-credit-card"></i>
+            <i class="el-icon-credit-card"></i>
         </div>
         &bull;
         <div class="target-size"><%= size_h %></div>
@@ -326,7 +326,7 @@
 <script type="text/template" id="link-search-target-template">
   <a class="list-group-item" data-id="<%= id %>" href="#">
   <span><%= title %></span>
-  <button aria-hidden="true" class="close" type="button"><i class="icon-chevron-right"></i></button>
+  <button aria-hidden="true" class="close" type="button"><i class="el-icon-chevron-right"></i></button>
   </a>
 </script>
 
