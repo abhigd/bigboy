@@ -24,16 +24,14 @@ from werkzeug.datastructures import MultiDict
 
 from app import app
 from app.forms import *
-from app import default_s3_conn
-from app import sqs_conn, sqs_queue
-from app import redis_client, login_manager
+from app import login_manager
 from app.user import User
 from app.lib import auth
 
 from flask import request, redirect
 from flask import session, render_template
 from flask import make_response, abort
-from flask import jsonify
+from flask import jsonify, current_app
 
 from flask.ext.login import login_user, current_user
 from flask.ext.login import login_required, login_url
@@ -42,7 +40,7 @@ login_manager.login_view = "login"
 
 @login_manager.user_loader
 def load_user(userid):
-    return User.get(userid)
+    return User.get(current_app.redis_client, userid)
 
 @app.route('/auth/<provider>')
 def oauth_entry(provider):
@@ -92,9 +90,9 @@ def oauth_entry(provider):
 
         idp_id = user_identity
         # Does a mapping exist between provider identity and userid
-        uid = redis_client.get("idp_user:%s:%s" % (provider, idp_id))
+        uid = current_app.redis_client.get("idp_user:%s:%s" % (provider, idp_id))
         if uid:
-            user = User(uid)
+            user = User(current_app.redis_client, uid)
             login_user(user)
             _next = state
 
@@ -109,7 +107,7 @@ def oauth_entry(provider):
                             "idp": provider
                            }
             invite_data.update(user_profile)
-            redis_client.setex("invites:%s" %invite_code,
+            current_app.redis_client.setex("invites:%s" %invite_code,
                                json.dumps(invite_data), 24*60*60)
 
             return redirect("/user/new?invite_code=%s" % invite_code)

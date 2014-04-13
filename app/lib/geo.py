@@ -3,7 +3,7 @@ from flask import session, render_template
 from flask import make_response, abort
 from flask import jsonify, Response
 
-from app import app, gi
+from flask import current_app
 
 import pygeoip
 country_code = ["--","AP","EU","AD","AE","AF","AG","AI","AL","AM","AN",
@@ -57,9 +57,9 @@ country_continent = ["--","AS","EU","EU","AS","AS","SA","SA","EU","AS",
                      "AF","AF","AF","AF"]
 
 def get_user_geo():
-    default_country = app.config.get('DEFAULT_COUNTRY')
+    default_country = current_app.config.get('DEFAULT_COUNTRY')
     ip_addr = request.headers.get("x-forwarded-for", "127.0.0.1")
-    cc = gi.country_code_by_addr(ip_addr) or default_country
+    cc = current_app.gi.country_code_by_addr(ip_addr) or default_country
     cn = country_continent[country_code.index(cc)]
 
     return cc, cn
@@ -67,9 +67,9 @@ def get_user_geo():
 def get_closest_bucket():
     cc, cn = get_user_geo()
 
-    return app.config.get("BUCKET_MAP")[cn]["bucket"]
+    return current_app.config.get("BUCKET_MAP")[cn]["bucket"]
 
 def get_closest_anon_bucket():
     cc, cn = get_user_geo()
 
-    return app.config.get("BUCKET_MAP")[cn]["anon_bucket"]
+    return current_app.config.get("BUCKET_MAP")[cn]["anon_bucket"]

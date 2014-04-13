@@ -1,9 +1,6 @@
 import time, uuid, json, calendar
 
 from app import app
-from app import default_s3_conn
-from app import redis_client
-from app import sqs_conn, sqs_queue
 from app.lib import upload, auth, files
 from app.lib import distribution, link
 from app.lib import geo
@@ -12,7 +9,7 @@ from app.forms  import *
 from flask import request, redirect
 from flask import session, render_template
 from flask import make_response, abort
-from flask import jsonify, Response
+from flask import jsonify, Response, current_app
 
 from werkzeug.datastructures import MultiDict
 from rfc6266 import build_header
@@ -34,14 +31,14 @@ def render_links():
     target = request.args.get("target", None)
 
     if target:
-        link_ids = redis_client.zrange("target_links:%s" %target, 0, -1)
-        link_count = redis_client.zcard("target_links:%s" %target)
+        link_ids = current_app.redis_client.zrange("target_links:%s" %target, 0, -1)
+        link_count = current_app.redis_client.zcard("target_links:%s" %target)
     else:
-        link_ids = redis_client.smembers("user_links:%s" %owner)
-        link_count = redis_client.scard("user_links:%s" %owner)
+        link_ids = current_app.redis_client.smembers("user_links:%s" %owner)
+        link_count = current_app.redis_client.scard("user_links:%s" %owner)
 
     if link_ids:
-        link_list = redis_client.mget(["links:%s" %link_id \
+        link_list = current_app.redis_client.mget(["links:%s" %link_id \
                                         for link_id in link_ids])
         link_data = [json.loads(x) for x in link_list if x]
 
@@ -65,8 +62,8 @@ def render_links():
 
 @app.route('/link/<link_id>', methods=['GET'])
 def render_link(link_id):
-    link_data = redis_client.get("links:%s" %link_id)
-    link_targets = redis_client.zrange("link_targets:%s" %link_id, 0, -1)
+    link_data = current_app.redis_client.get("links:%s" %link_id)
+    link_targets = current_app.redis_client.zrange("link_targets:%s" %link_id, 0, -1)
     target_render_data = []
 
     if link_data is None:
@@ -88,14 +85,14 @@ def render_link(link_id):
     # Check for temp uploads and move them to link_targets if complete.
     # files will not be moved to the main bucket until the user
     # approves it. File will be served until then from the S3 bucket
-    owner_info = json.loads(redis_client.get("user:%s" %link_info["owner"]))
+    owner_info = json.loads(current_app.redis_client.get("user:%s" %link_info["owner"]))
     del owner_info["idp"]
     del owner_info["idp_id"]
     link_info["owner"] = owner_info
 
     if link_targets:
         target_ids = link_targets
-        target_data = redis_client.mget(["files:%s" %x for x in target_ids])
+        target_data = current_app.redis_client.mget(["files:%s" %x for x in target_ids])
         target_info = [json.loads(x) for x in target_data if x]
     else:
         target_info = []
@@ -105,7 +102,7 @@ def render_link(link_id):
                         %(app.config.get('HOSTNAME'), link_id,
                           target["id"], target["title"])
         target["url"] = target_url
-        target_download_count = redis_client.llen(
+        target_download_count = current_app.redis_client.llen(
                                     "target_download_counter:%s:%s" \
                                         %(link_id, target["id"]))
         target["count"] = int(target_download_count)
@@ -118,9 +115,9 @@ def render_link(link_id):
 
     if current_user.is_authenticated():
         temp_target_info = []
-        temp_uploads = redis_client.smembers("link_uploads:%s" %(link_id))
+        temp_uploads = current_app.redis_client.smembers("link_uploads:%s" %(link_id))
         if temp_uploads:
-            temp_target_data = redis_client.mget(["temp_files:%s" %x \
+            temp_target_data = current_app.redis_client.mget(["temp_files:%s" %x \
                                     for x in temp_uploads])
             temp_target_info = [json.loads(x) for x in temp_target_data if x]
 
@@ -181,12 +178,12 @@ def create_link():
                  "allow_downloads": True,
                  "allow_uploads": False}
 
-    redis_client.set("links:%s" %link_id, json.dumps(link_data))
-    redis_client.sadd("user_links:%s" %owner, link_id)
+    current_app.redis_client.set("links:%s" %link_id, json.dumps(link_data))
+    current_app.redis_client.sadd("user_links:%s" %owner, link_id)
 
     if link_targets:
         target_ids = link_targets
-        target_data = redis_client.mget(["files:%s" %x for x in target_ids])
+        target_data = current_app.redis_client.mget(["files:%s" %x for x in target_ids])
         targets = [json.loads(x) for x in target_data if x]
 
         for target in targets:
@@ -200,7 +197,7 @@ def create_link():
 @app.route('/link/<link_id>', methods=['PUT'])
 @login_required
 def edit_link(link_id):
-    link_data = redis_client.get("links:%s" %link_id)
+    link_data = current_app.redis_client.get("links:%s" %link_id)
     if not link_data:
         abort(404)
 
@@ -222,21 +219,21 @@ def edit_link(link_id):
                  "allow_downloads": form.allow_downloads.data,
                  "allow_uploads": form.allow_uploads.data}
 
-    redis_client.set("links:%s" %link_id, json.dumps(link_data))
+    current_app.redis_client.set("links:%s" %link_id, json.dumps(link_data))
 
     return jsonify(link_data)
 
 @app.route('/link/<link_id>', methods=["DELETE"])
 @login_required
 def delete_link(link_id):
-    link_data = redis_client.get("links:%s" %link_id)
+    link_data = current_app.redis_client.get("links:%s" %link_id)
     if not link_data:
         abort(404)
 
     target = request.args.get("target", None)
     if target:
         target_id = target.split("/", 2)[-1]
-        target_data = redis_client.get("files:%s" % target_id)
+        target_data = current_app.redis_client.get("files:%s" % target_id)
         if not target_data:
             abort(400, "Specified File does not exist")
 
@@ -247,9 +244,9 @@ def delete_link(link_id):
     # 1. Remove a link or
     # 2. Remove a specific target from a link
     if target is None:
-        redis_client.delete("links:%s" %link_id)
-        redis_client.srem("user_links:%s" %owner, link_id)
-        redis_client.delete("link_uploads:%s" %link_id)
+        current_app.redis_client.delete("links:%s" %link_id)
+        current_app.redis_client.srem("user_links:%s" %owner, link_id)
+        current_app.redis_client.delete("link_uploads:%s" %link_id)
     else:
         link.delete_link_target(link_info, json.loads(target_data))
 
@@ -264,13 +261,13 @@ def delete_link(link_id):
 @app.route('/link/<link_id>/search', methods=["GET"])
 @login_required
 def search_link_targets(link_id):
-    link_data = redis_client.get("links:%s" %link_id)
+    link_data = current_app.redis_client.get("links:%s" %link_id)
 
     if link_data is None:
         abort(404)
 
-    last_100_files = redis_client.zrevrange("local_files", 0, 100)
-    link_targets = redis_client.zrevrange("link_targets:%s" %link_id, 0, -1)
+    last_100_files = current_app.redis_client.zrevrange("local_files", 0, 100)
+    link_targets = current_app.redis_client.zrevrange("link_targets:%s" %link_id, 0, -1)
     interesting_files = set(last_100_files) - set(link_targets)
     data = files.get_file_data(interesting_files)
 
@@ -278,8 +275,8 @@ def search_link_targets(link_id):
 
 @app.route('/link/<link_id>/target/<target_id>/<file_name>', methods=["GET"])
 def get_link_target(link_id, target_id, file_name):
-    link_data = redis_client.get("links:%s" %link_id)
-    target_data = redis_client.get("files:%s" % target_id)
+    link_data = current_app.redis_client.get("links:%s" %link_id)
+    target_data = current_app.redis_client.get("files:%s" % target_id)
 
     if link_data is None or target_data is None:
         abort(404)
@@ -289,18 +286,18 @@ def get_link_target(link_id, target_id, file_name):
         abort(404, "Link has expired")
 
     if link_info["max_target_downloads"] > 0:
-        target_d_count = redis_client.llen("target_download_counter:%s:%s" \
+        target_d_count = current_app.redis_client.llen("target_download_counter:%s:%s" \
                                              %(link_id, target_id))
         if target_d_count >= link_info["max_target_downloads"]:
             abort(404, "Limit reached")
 
-    target_exists = redis_client.zrank("link_targets:%s" %link_id, target_id)
+    target_exists = current_app.redis_client.zrank("link_targets:%s" %link_id, target_id)
     if target_exists is None:
         abort(404, "No such file exists")
 
     target_info = json.loads(target_data)
     signed_url = distribution.get_signed_url(target_info)
-    redis_client.lpush("target_download_counter:%s:%s" \
+    current_app.redis_client.lpush("target_download_counter:%s:%s" \
                            %(link_id, target_id),
                        time.time())
     print signed_url
@@ -310,7 +307,7 @@ def get_link_target(link_id, target_id, file_name):
 @login_required
 def edit_link_target(link_id, target_id):
     form = EditLinkTargetForm(MultiDict(request.json))
-    link_data = redis_client.get("links:%s" %link_id)
+    link_data = current_app.redis_client.get("links:%s" %link_id)
 
     if not link_data:
         abort(404)
@@ -321,7 +318,7 @@ def edit_link_target(link_id, target_id):
     approved = form.approved.data
     description = form.description.data
     if approved:
-        temp_file_data = redis_client.get("temp_files:%s" % target_id)
+        temp_file_data = current_app.redis_client.get("temp_files:%s" % target_id)
         if not temp_file_data:
             abort(404)
 
@@ -337,7 +334,7 @@ def edit_link_target(link_id, target_id):
 @app.route('/link/<link_id>/target/', methods=["POST"])
 def create_link_target(link_id):
     form = LinkTargetForm(MultiDict(request.json))
-    link_data = redis_client.get("links:%s" %link_id)
+    link_data = current_app.redis_client.get("links:%s" %link_id)
 
     if not link_data:
         abort(404)
@@ -356,9 +353,9 @@ def create_link_target(link_id):
 
     target_id = form.target_id.data
     if current_user.is_authenticated():
-        target_data = redis_client.get("files:%s" %target_id)
+        target_data = current_app.redis_client.get("files:%s" %target_id)
     else:
-        target_data = redis_client.get("temp_files:%s" %target_id)
+        target_data = current_app.redis_client.get("temp_files:%s" %target_id)
     if not target_data:
         abort(400, form.errors)
 
@@ -376,13 +373,13 @@ def create_link_target(link_id):
 @app.route('/link/<link_id>/target/<target_id>', methods=["DELETE"])
 @login_required
 def delete_link_target(link_id, target_id):
-    link_data = redis_client.get("links:%s" %link_id)
+    link_data = current_app.redis_client.get("links:%s" %link_id)
     link_target = target_id
 
     if link_data is None:
         abort(404)
 
-    target_data = redis_client.get("files:%s" %target_id)
+    target_data = current_app.redis_client.get("files:%s" %target_id)
     if not target_data:
         abort(400)
 
@@ -394,9 +391,9 @@ def delete_link_target(link_id, target_id):
 @app.route('/link/<link_id>/upload/<file_id>/<file_name>', methods=["GET"])
 @login_required
 def get_temp_link_upload(link_id, file_id, file_name):
-    link_data = redis_client.get("links:%s" %link_id)
-    temp_file = redis_client.get("temp_files:%s" %file_id)
-    temp_file_exists = redis_client.sismember("link_uploads:%s" %(link_id),
+    link_data = current_app.redis_client.get("links:%s" %link_id)
+    temp_file = current_app.redis_client.get("temp_files:%s" %file_id)
+    temp_file_exists = current_app.redis_client.sismember("link_uploads:%s" %(link_id),
                                               file_id)
 
     if link_data is None or temp_file is None or temp_file_exists is False:
@@ -420,7 +417,7 @@ def get_temp_link_upload(link_id, file_id, file_name):
 def link_target_upload_manage(link_id):
     # TODO: Check if link allows uploads. Set limits
     phase = request.args.get("phase", "init")
-    link_data = redis_client.get("links:%s" %link_id)
+    link_data = current_app.redis_client.get("links:%s" %link_id)
 
     if link_data is None:
         abort(404)
@@ -457,8 +454,8 @@ def link_target_upload_manage(link_id):
     if phase in ["form", "complete"]:
         if not current_user.is_authenticated():
             s3_key = response_data["key"]
-            redis_client.expire("temp_files:%s" %(s3_key), 600)
-            redis_client.sadd("link_uploads:%s" %(link_id), s3_key)
+            current_app.redis_client.expire("temp_files:%s" %(s3_key), 600)
+            current_app.redis_client.sadd("link_uploads:%s" %(link_id), s3_key)
 
     return jsonify(response_data)
 
@@ -467,7 +464,7 @@ def link_target_upload(link_id, file_name):
     #Check if link allows anonmous uploads
     # Set size limits for file.
     # Set storage type to reduced redundancy
-    link_data = redis_client.get("links:%s" %link_id)
+    link_data = current_app.redis_client.get("links:%s" %link_id)
     if link_data is None:
         abort(404)
 

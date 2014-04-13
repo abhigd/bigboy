@@ -9,10 +9,7 @@ import boto
 
 from rfc6266 import build_header
 
-from app import app
-from app import default_s3_conn
-from app import redis_client
-from app import sqs_conn, sqs_queue
+from flask import current_app
 
 from flask.ext.login import login_user, current_user
 from flask.ext.login import login_required, login_url
@@ -28,7 +25,7 @@ def upload_curl(file_title, file_length, file_type):
     anon_bucket_name = geo.get_closest_anon_bucket()
     bucket_name = geo.get_closest_bucket()
 
-    url = default_s3_conn.generate_url(600, "PUT", bucket_name, file_id)
+    url = current_app.default_s3_conn.generate_url(600, "PUT", bucket_name, file_id)
     file_info = {
         "title": file_title,
         "bucket": anon_bucket_name,
@@ -37,10 +34,10 @@ def upload_curl(file_title, file_length, file_type):
         "size": file_length,
         "created": time.time()
     }
-    redis_client.set("temp_files:%s" % file_id, json.dumps(file_info))
+    current_app.redis_client.set("temp_files:%s" % file_id, json.dumps(file_info))
 
-    redis_client.expire("temp_files:%s" %(file_id), 600)
-    redis_client.sadd("link_uploads:%s" %(link_id), file_id)
+    current_app.redis_client.expire("temp_files:%s" %(file_id), 600)
+    current_app.redis_client.sadd("link_uploads:%s" %(link_id), file_id)
 
     return url
 
@@ -48,7 +45,7 @@ def upload_init(phase, form, bucket_name):
     source = "local"
     start_time = time.time()
     # TODO Get the connection based on Geo
-    s3_connection = default_s3_conn
+    s3_connection = current_app.default_s3_conn
     print time.time()
     if form.key.data == "":
         s3_key = uuid.uuid4().hex
@@ -85,7 +82,7 @@ def upload_init(phase, form, bucket_name):
                               max_content_length=int(file_size))
         response_data["key"] = s3_key
     else:
-        s3_bucket = default_s3_conn.get_bucket(bucket_name)
+        s3_bucket = current_app.default_s3_conn.get_bucket(bucket_name)
         file_meta = {
                         "content-type":file_type,
                         "content-size": file_size,
@@ -105,7 +102,7 @@ def upload_init(phase, form, bucket_name):
                     "id": s3_key,
                     "created": time.time()
                 }
-    redis_client.set("temp_files:%s" % s3_key, json.dumps(file_data))
+    current_app.redis_client.set("temp_files:%s" % s3_key, json.dumps(file_data))
     print time.time() - start_time
     return response_data
 
@@ -123,23 +120,23 @@ def upload_part(phase, form):
     date_now = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
     string_to_sign = """PUT\n%s\n\n\nx-amz-date:%s\n%s""" % \
         (content_hash, date_now, "/%s/%s" % (bucket_name, url_part))
-    b64_hmac = default_s3_conn._auth_handler.sign_string(string_to_sign)
+    b64_hmac = current_app.default_s3_conn._auth_handler.sign_string(string_to_sign)
     auth_header = "%s %s:%s" % \
-                    ("AWS", default_s3_conn.provider.access_key, b64_hmac)
+                    ("AWS", current_app.default_s3_conn.provider.access_key, b64_hmac)
     headers = {'date': date_now, 'authorization': auth_header}
 
     return {"headers": headers, "url": url}
 
 def upload_complete(phase, s3_key, mp_id):
     source = "local"
-    file_data = redis_client.get("temp_files:%s" % s3_key)
+    file_data = current_app.redis_client.get("temp_files:%s" % s3_key)
     if file_data is None:
         abort(400)
 
     file_info = json.loads(file_data)
     bucket_name = file_info["bucket"]
     print time.time()
-    s3_bucket = default_s3_conn.lookup(bucket_name)
+    s3_bucket = current_app.default_s3_conn.lookup(bucket_name)
     print time.time()
     mp_upload = boto.s3.multipart.MultiPartUpload(s3_bucket)
     mp_upload.key_name = s3_key

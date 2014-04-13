@@ -1,14 +1,11 @@
-
 import json
-
-from app import redis_client
 
 class User(object):
     '''
     This provides default implementations for the methods that Flask-Login
     expects user objects to have.
     '''
-    def __init__(self, user_id):
+    def __init__(self, redis_client, user_id):
         self.user_id = user_id
         user_info = redis_client.get("user:%s" %(user_id))
         self.user_info = json.loads(user_info)
@@ -46,7 +43,7 @@ class User(object):
         return not equal
 
     @staticmethod
-    def get(user_id):
-        user = User(user_id)
+    def get(redis_client, user_id):
+        user = User(redis_client, user_id)
 
         return user

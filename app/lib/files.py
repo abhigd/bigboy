@@ -10,10 +10,8 @@ import boto
 from rfc6266 import build_header
 
 from app.forms import *
-from app import default_s3_conn
-from app import redis_client
-from app import sqs_conn, sqs_queue
 from app.lib import geo
+from flask import current_app
 
 from flask.ext.login import login_user, current_user
 from flask.ext.login import login_required, login_url
@@ -45,18 +43,18 @@ def create(file_info):
                    "title": file_title,
                    "bucket": file_info["bucket"]
                 }
-    redis_client.set("files:%s" %file_id, json.dumps(file_data))
-    redis_client.zadd("user_files:%s" %owner, file_id, created)
-    redis_client.zadd("%s:%s" %(source, owner), file_id, created)
-    redis_client.zadd("%s_files" %(source), file_id, created)
+    current_app.redis_client.set("files:%s" %file_id, json.dumps(file_data))
+    current_app.redis_client.zadd("user_files:%s" %owner, file_id, created)
+    current_app.redis_client.zadd("%s:%s" %(source, owner), file_id, created)
+    current_app.redis_client.zadd("%s_files" %(source), file_id, created)
 
-    redis_client.delete("temp_files:%s" % file_id)
+    current_app.redis_client.delete("temp_files:%s" % file_id)
 
     original_link = "%s/download" % file_id
     original_value = json.dumps({"link": original_link,
                                  "label": "Original",
                                  "title": file_title})
-    redis_client.sadd("file_views:%s" % file_id, original_value)
+    current_app.redis_client.sadd("file_views:%s" % file_id, original_value)
 
     # sqs_message.set_body(json.dumps({
     #                                  "key": file_id,
@@ -95,30 +93,30 @@ def delete(file_info):
     result = bucket_connection.delete_keys(key_list)
 
     if len(result.errors) == 0:
-        redis_client.delete("files:%s" % file_id)
-        redis_client.zrem("user_files:%s" % owner, file_id)
-        redis_client.zrem("%s:%s" % (source, owner), file_id)
-        redis_client.zrem("%s_files" %(source), file_id)
+        current_app.redis_client.delete("files:%s" % file_id)
+        current_app.redis_client.zrem("user_files:%s" % owner, file_id)
+        current_app.redis_client.zrem("%s:%s" % (source, owner), file_id)
+        current_app.redis_client.zrem("%s_files" %(source), file_id)
 
-        redis_client.delete("file_views:%s" % file_id)
+        current_app.redis_client.delete("file_views:%s" % file_id)
 
         target = "/files/%s" %file_id
-        links = redis_client.zrange("target_links:%s" %target, 0, -1)
+        links = current_app.redis_client.zrange("target_links:%s" %target, 0, -1)
         for link in links:
-            redis_client.zrem("link_targets:%s" %link, target)
+            current_app.redis_client.zrem("link_targets:%s" %link, target)
 
-        redis_client.delete("target_links:%s" %target)
+        current_app.redis_client.delete("target_links:%s" %target)
         # es.delete("files", "file", file_id)
 
 def get_file_data(file_ids):
   # Given a list of file ids, return information about them
     users = {}
-    _files = redis_client.mget(["files:%s" %file_id \
+    _files = current_app.redis_client.mget(["files:%s" %file_id \
                                     for file_id in file_ids])
     files = [json.loads(x) for x in _files if x]
     user_ids = set(x["owner"] for x in files)
     _users = [json.loads(x) for x in \
-                redis_client.mget(["user:%s" %x for x in user_ids])]
+                current_app.redis_client.mget(["user:%s" %x for x in user_ids])]
     for _user in _users:
         del _user["idp"]
         del _user["idp_id"]

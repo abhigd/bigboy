@@ -11,15 +11,13 @@ from rfc6266 import build_header
 
 from app import app
 from app.forms import *
-from app import redis_client
-from app import sqs_conn, sqs_queue
 from app.lib import upload, auth, files
 from app.lib import distribution, geo
 
 from flask import request, redirect, url_for
 from flask import session, render_template
 from flask import make_response, abort
-from flask import jsonify, Response
+from flask import jsonify, Response, current_app
 
 from boto.s3.key import Key
 from boto.sqs.message import Message as SQSMessage
@@ -95,8 +93,8 @@ def list_files():
     start = form.start.data
     end = form.end.data
     data = []
-    file_ids = redis_client.zrange("user_files:%s" %owner, start, end-1)
-    files_count = redis_client.zcard("user_files:%s" %owner)
+    file_ids = current_app.redis_client.zrange("user_files:%s" %owner, start, end-1)
+    files_count = current_app.redis_client.zcard("user_files:%s" %owner)
     page_num = start/10+1
     if file_ids and files_count:
         data = files.get_file_data(file_ids)
@@ -124,7 +122,7 @@ def create_file():
         print form.errors
         abort(400)
 
-    file_data = redis_client.get("temp_files:%s" % form.key.data)
+    file_data = current_app.redis_client.get("temp_files:%s" % form.key.data)
     if not file_data:
         abort(400)
 
@@ -149,7 +147,7 @@ def modify_file():
 @app.route('/files/<file_id>', methods=['DELETE'])
 @login_required
 def delete_file(file_id):
-    file_data = redis_client.get("files:%s" %file_id)
+    file_data = current_app.redis_client.get("files:%s" %file_id)
     if not file_data:
         abort(404)
 
@@ -163,14 +161,14 @@ def delete_file(file_id):
 @nocache
 @login_required
 def show_file(file_id):
-    file_data = redis_client.get("files:%s" % file_id)
+    file_data = current_app.redis_client.get("files:%s" % file_id)
 
     if file_data is None:
         abort(404)
 
     file_info = json.loads(file_data)
     views = [json.loads(x) for x in \
-                        redis_client.smembers("file_views:%s" % file_id)]
+                        current_app.redis_client.smembers("file_views:%s" % file_id)]
     file_info.update({"views": views})
 
     if request.is_xhr:
@@ -181,7 +179,7 @@ def show_file(file_id):
 @app.route('/files/<file_id>/download')
 @login_required
 def download_file(file_id):
-    file_data = redis_client.get("files:%s" %file_id)
+    file_data = current_app.redis_client.get("files:%s" %file_id)
 
     if file_data is None:
         abort(404)
@@ -193,7 +191,7 @@ def download_file(file_id):
 @app.route('/files/<file_id>/versions/', methods=['GET'])
 @login_required
 def get_file_versions(file_id):
-    file_data = redis_client.get("files:%s" %file_id)
+    file_data = current_app.redis_client.get("files:%s" %file_id)
     version_marker = request.args.get("next", "")
 
     if file_data is None:
@@ -224,7 +222,7 @@ def get_file_versions(file_id):
 @app.route('/files/<file_id>/versions/<version_id>', methods=['GET'])
 @login_required
 def get_file_version(file_id, version_id):
-    file_data = redis_client.get("files:%s" %file_id)
+    file_data = current_app.redis_client.get("files:%s" %file_id)
 
     if file_data is None:
         abort(404)
