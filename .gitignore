@@ -28,11 +28,6 @@ nosetests.xml
 # Translations
 *.mo
 
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
-
 *.log
 
 *.pem
@@ -45,6 +40,8 @@ config.py
 
 node_modules/
 
-app/static/js/lib/
+vendor/
 
 .env
+
+bower_components/
