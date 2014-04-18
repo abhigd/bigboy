@@ -17,11 +17,11 @@
     "tests"
   ],
   "dependencies": {
-      "jquery": "1.9",
-      "backbone": "1.1",
-      "underscore": "1.6",
-      "bootstrap": "3.0",
-      "elusive-iconfont": null,
-      "crypto-js-evanvosberg": "3.1"
+    "jquery": "~2.1.0",
+    "backbone": "1.1",
+    "underscore": "1.6",
+    "bootstrap": "~3.1.1",
+    "elusive-iconfont": "*",
+    "crypto-js-evanvosberg": "~3.1.2"
   }
 }
