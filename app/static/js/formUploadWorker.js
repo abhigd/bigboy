@@ -1,6 +1,6 @@
-importScripts('lib/crypto-js-evanvosberg/build/rollups/md5.js');
-importScripts('lib/crypto-js-evanvosberg/build/components/enc-base64.js');
-importScripts('lib/crypto-js-evanvosberg/build/components/lib-typedarrays.js');
+importScripts('md5.js');
+importScripts('enc-base64-min.js');
+importScripts('lib-typedarrays.js');
 
 self.onmessage = function(e) {
   var workerData = e.data,
