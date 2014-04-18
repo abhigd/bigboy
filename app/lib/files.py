@@ -87,7 +87,7 @@ def delete(file_info):
     source = file_info["source"]
     owner = file_info["owner"]
 
-    bucket_connection = default_s3_conn.lookup(bucket)
+    bucket_connection = current_app.default_s3_conn.lookup(bucket)
     versions = bucket_connection.list_versions(file_id)
     key_list = [(file_id, v.version_id) for v in versions]
     result = bucket_connection.delete_keys(key_list)
