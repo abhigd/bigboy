@@ -1,6 +1,8 @@
 import os
 import base64
 import json
+import pickle
+import urlparse
 
 import redis
 
@@ -26,7 +28,6 @@ logging.basicConfig(filename="bigboy.log", level=logging.INFO)
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
-app.config.from_object('config')
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -35,6 +36,8 @@ login_manager.login_view = "login"
 
 def startup():
     with app.app_context():
+
+        load_config()
 
         AWS_ACCESS = app.config.get('AWS_ACCESS')
         AWS_SECRET = app.config.get('AWS_SECRET')
@@ -81,5 +84,21 @@ def startup():
         current_app.session_interface = RedisSessionInterface(redis_client)
         # print app.config.get("ENVIRONMENT")
         from app.views import auth, files, link, user
-        app.run('0.0.0.0', 5000)
+        app.run('0.0.0.0', current_app.config.get('PORT'))
+
+def load_config():
+    environment = current_app.config.get('ENVIRONMENT')
+    if environment == "heroku":
+        for key in os.environ.keys():
+            if key.startswith("BB_"):
+                current_app.config[key.replace("BB_", "")] = pickle.loads(base64.b64decode(os.getenv(key)))
+
+        # Parse rediscloud URL
+        url = urlparse.urlparse(os.environ.get('REDISCLOUD_URL'))
+        current_app.config["REDIS_HOST"] = url.hostname
+        current_app.config["REDIS_PORT"] = url.port
+        current_app.config["REDIS_PASSWORD"] = url.password
+
+    else:
+        current_app.config.from_object('config')
 
