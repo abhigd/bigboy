@@ -34,8 +34,6 @@ nosetests.xml
 
 app/static/css/app/*.css
 
-GeoIP.dat
-
 config.py
 
 node_modules/
