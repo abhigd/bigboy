@@ -88,3 +88,5 @@ BUCKET_MAP = {
         "aws_region":"us-east-1"
     }
 }
+
+COLORLOVERS_LINK = "preview link from color lovers or any link to an image"
