@@ -172,9 +172,9 @@ var FileAppView = Backbone.View.extend({
       var isChecked = this.$el.find('#navigationbar #select-toggle input')[0].checked;
 
       if (!isChecked) {
-        this.$el.find("#navigationbar #select-toggle .file-select").addClass("icon-check").removeClass("icon-check-empty");
+        this.$el.find("#navigationbar #select-toggle .file-select").addClass("el-icon-check").removeClass("el-icon-check-empty");
       } else {
-        this.$el.find("#navigationbar #select-toggle .file-select").addClass("icon-check-empty").removeClass("icon-check");
+        this.$el.find("#navigationbar #select-toggle .file-select").addClass("el-icon-check-empty").removeClass("el-icon-check");
       }
 
       this.$el.find('#navigationbar #select-toggle input').prop('checked', !(isChecked)).change();
@@ -184,9 +184,9 @@ var FileAppView = Backbone.View.extend({
 
     toggleSelectAllOption: function(state) {
       if (state) {
-        this.$el.find("#navigationbar #select-toggle .file-select").addClass("icon-check").removeClass("icon-check-empty");
+        this.$el.find("#navigationbar #select-toggle .file-select").addClass("el-icon-check").removeClass("el-icon-check-empty");
       } else {
-        this.$el.find("#navigationbar #select-toggle .file-select").addClass("icon-check-empty").removeClass("icon-check");
+        this.$el.find("#navigationbar #select-toggle .file-select").addClass("el-icon-check-empty").removeClass("el-icon-check");
       }
 
       this.$el.find('#navigationbar #select-toggle input').prop('checked', state).change();

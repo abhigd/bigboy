@@ -169,9 +169,9 @@ var fileView = Backbone.View.extend({
       var isChecked = e.currentTarget.checked;
 
       if (isChecked) {
-        this.$el.find(".file-select").addClass("icon-check").removeClass("icon-check-empty");
+        this.$el.find(".file-select").addClass("el-icon-check").removeClass("el-icon-check-empty");
       } else {
-        this.$el.find(".file-select").addClass("icon-check-empty").removeClass("icon-check");
+        this.$el.find(".file-select").addClass("el-icon-check-empty").removeClass("el-icon-check");
       }
     },
 
@@ -343,7 +343,7 @@ var providerView = Backbone.View.extend({
 
     fileSelected : function() {
 
-      if (this.$('.icon-check').length > 0) {
+      if (this.$('.el-icon-check').length > 0) {
         app.fileApp.trigger("file-selected", false);
       } else {
         app.fileApp.trigger("file-selected", true);
@@ -351,7 +351,7 @@ var providerView = Backbone.View.extend({
     },
 
     deleteFiles: function() {
-      var selectedFiles = this.$('.icon-check input');
+      var selectedFiles = this.$('.el-icon-check input');
 
       _.each(selectedFiles, function(elem) {
           var id = this.$(elem).data("id");
@@ -367,7 +367,7 @@ var providerView = Backbone.View.extend({
     shareFiles: function() {
       var now = new Date().getTime()/1000;
       var expiresIn = new Date((now + 3600)*1000).getTime()/1000;
-      var selectedFiles = this.$('.icon-check input');
+      var selectedFiles = this.$('.el-icon-check input');
       var targets = [];
 
       _.each(selectedFiles, function(elem) {
@@ -515,7 +515,7 @@ var FileInfoView = Backbone.View.extend({
     },
 
     deleteShares: function() {
-      var selected = this.$('.icon-check input');
+      var selected = this.$('.el-icon-check input');
 
       _.each(selected, function(elem) {
         var model = this.links.get(this.$(elem).data("id"));
@@ -585,7 +585,7 @@ var fileInfoAboutTabView = FileInfoView.extend({
     },
 
     toggleDeleteButton : function() {
-      if (this.$el.find('.icon-check').length > 0) {
+      if (this.$el.find('.el-icon-check').length > 0) {
         this.parent.trigger('toggle-delete', true);
         // this.$el.find("#delete-shares-button").removeClass("disabled");
       } else {
@@ -633,9 +633,9 @@ var FileLinkView = Backbone.View.extend({
       var isChecked = this.$el.find('.file-share-select input')[0].checked;
 
       if (!isChecked) {
-        this.$el.find(".file-share-select").addClass("icon-check").removeClass("icon-check-empty");
+        this.$el.find(".file-share-select").addClass("el-icon-check").removeClass("el-icon-check-empty");
       } else {
-        this.$el.find(".file-share-select").addClass("icon-check-empty").removeClass("icon-check");
+        this.$el.find(".file-share-select").addClass("el-icon-check-empty").removeClass("el-icon-check");
       }
 
       this.$el.find('.file-share-select input').prop('checked', !(isChecked)).change();
