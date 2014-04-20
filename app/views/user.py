@@ -31,7 +31,7 @@ def new_user_form():
 
     invite_code = request.args.get("invite_code", None)
     if invite_code:
-        invite_data = redis_client.get("invites:%s" %invite_code)
+        invite_data = current_app.redis_client.get("invites:%s" %invite_code)
         if invite_data:
             return render_template("welcome.html", invite_code=invite_code)
 
@@ -42,7 +42,7 @@ def new_user():
     # TODO Decrypt, the hidden field
     invite_code = request.form.get("invite_code")
 
-    invite_data = redis_client.get("invites:%s" %invite_code)
+    invite_data = current_app.redis_client.get("invites:%s" %invite_code)
     if invite_data:
         uid = uuid.uuid4().hex
         invite_info = json.loads(invite_data)
@@ -50,12 +50,12 @@ def new_user():
         idp_id = invite_info["idp_id"]
         invite_info["id"] = uid
 
-        redis_client.set("user:%s" %uid, json.dumps(invite_info))
-        redis_client.set("idp_user:%s:%s" % (idp, idp_id), uid)
-        redis_client.sadd("user_idp:%s" %(uid), "%s:%s" %(idp, idp_id))
-        redis_client.delete("invites:%s" %invite_code)
+        current_app.redis_client.set("user:%s" %uid, json.dumps(invite_info))
+        current_app.redis_client.set("idp_user:%s:%s" % (idp, idp_id), uid)
+        current_app.redis_client.sadd("user_idp:%s" %(uid), "%s:%s" %(idp, idp_id))
+        current_app.redis_client.delete("invites:%s" %invite_code)
 
-        user = User(uid)
+        user = User(current_app.redis_client, uid)
         login_user(user)
 
         return redirect("/")
@@ -87,8 +87,8 @@ def new_user():
 @login_required
 def user_profile():
     user_id = current_user.user_id
-    user_data = redis_client.get("user:%s" %user_id)
-    user_idp_data = redis_client.smembers("user_idp:%s" %(user_id))
+    user_data = current_app.redis_client.get("user:%s" %user_id)
+    user_idp_data = current_app.redis_client.smembers("user_idp:%s" %(user_id))
     user_idps = [x.split(":", 1)[0] for x in user_idp_data]
     user_non_idps = set(app.config.get('OAUTH_PROVIDER_MAP').keys()) - \
                     set(user_idps)
@@ -101,7 +101,7 @@ def user_profile():
 @app.route('/user/<user_id>', methods=['GET'])
 @login_required
 def fetch_user(user_id):
-    user_data = redis_client.get("user:%s" %user_id)
+    user_data = current_app.redis_client.get("user:%s" %user_id)
 
     return user_data
 
