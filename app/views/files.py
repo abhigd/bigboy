@@ -49,8 +49,7 @@ def manage_upload():
         if not form.validate():
             abort(400, form.errors)
 
-        bucket_name = geo.get_closest_bucket()
-        response_data = upload.upload_init(phase, form, bucket_name)
+        response_data = upload.upload_init(phase, form)
 
         return jsonify(response_data)
 

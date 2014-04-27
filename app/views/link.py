@@ -436,11 +436,8 @@ def link_target_upload_manage(link_id):
         if not form.validate():
             abort(400, form.errors)
 
-        if current_user.is_authenticated():
-            bucket_name = geo.get_closest_bucket()
-        else:
-            bucket_name = geo.get_closest_anon_bucket()
-        response_data = upload.upload_init(phase, form, bucket_name)
+        is_anonymous = not current_user.is_authenticated()
+        response_data = upload.upload_init(phase, form, is_anonymous)
 
     elif phase == "complete":
         s3_key = request.json.get("s3_key", None)

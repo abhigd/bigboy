@@ -9,6 +9,7 @@ import boto
 
 from rfc6266 import build_header
 
+from app.lib import geo
 from flask import current_app
 
 from flask.ext.login import login_user, current_user
@@ -41,11 +42,15 @@ def upload_curl(file_title, file_length, file_type):
 
     return url
 
-def upload_init(phase, form, bucket_name):
+def upload_init(phase, form, anon=False):
     source = "local"
     start_time = time.time()
-    # TODO Get the connection based on Geo
+    if anon:
+        bucket_name = geo.get_closest_anon_bucket()
+    else:
+        bucket_name = geo.get_closest_bucket()
     s3_connection = current_app.default_s3_conn
+
     print time.time()
     if form.key.data == "":
         s3_key = uuid.uuid4().hex
