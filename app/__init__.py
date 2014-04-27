@@ -44,12 +44,15 @@ def startup():
         # S3
         regions = set([x["aws_region"] for x in app.config.get('BUCKET_MAP').values()])
         s3_connections = {}
-        for region in regions:
-            conn = boto.s3.connect_to_region(region, aws_access_key_id=AWS_ACCESS,
-                                             aws_secret_access_key=AWS_SECRET)
-            s3_connections[region] = conn
+        # for region in regions:
+        #     conn = boto.s3.connect_to_region(region, aws_access_key_id=AWS_ACCESS,
+        #                                      aws_secret_access_key=AWS_SECRET)
+        #     s3_connections[region] = conn
 
-        current_app.default_s3_conn = default_s3_conn = s3_connections[app.config.get('DEFAULT_AWS_REGION')]
+        current_app.default_s3_conn = boto.connect_s3(
+                                        aws_access_key_id=AWS_ACCESS,
+                                        aws_secret_access_key=AWS_SECRET)
+        # current_app.s3_connections = s3_connections
 
         # Redis
         redis_host = app.config.get('REDIS_HOST', 'localhost')
