@@ -22,6 +22,7 @@
     "underscore": "1.6",
     "bootstrap": "~3.1.1",
     "elusive-iconfont": "*",
-    "crypto-js-evanvosberg": "~3.1.2"
+    "crypto-js-evanvosberg": "~3.1.2",
+    "aws-sdk": "*"
   }
 }

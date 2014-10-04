@@ -41,7 +41,8 @@ module.exports = function(grunt) {
           {src: "vendor/bootstrap/dist/js/bootstrap.min.js", dest: "app/static/js/bootstrap.min.js"},
           {src: "vendor/crypto-js-evanvosberg/build/rollups/md5.js", dest: "app/static/js/md5.js"},
           {src: "vendor/crypto-js-evanvosberg/build/components/enc-base64-min.js", dest: "app/static/js/enc-base64-min.js"},
-          {src: "vendor/crypto-js-evanvosberg/src/lib-typedarrays.js", dest: "app/static/js/lib-typedarrays.js"}
+          {src: "vendor/crypto-js-evanvosberg/src/lib-typedarrays.js", dest: "app/static/js/lib-typedarrays.js"},
+          {src: "vendor/aws-sdk/aws-sdk.js", dest: "app/static/js/aws-sdk.js"}
         ]
       }
     }
