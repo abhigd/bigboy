@@ -23,6 +23,8 @@
               </ul>
             </li>
           </ul>
+          <ul id="actionbar-breadcrumb" class="nav">
+          </ul>
           <div class="btn-group navbar-right">
             <button id="upload-btn" class="upload-btn navbar-btn btn btn-info">
                 <i class="el-icon-upload"></i>
@@ -205,6 +207,14 @@
     <li>
         <a target="_blank" href="<%= link %>"><%=title %>
     </li>
+</script>
+
+<script type="text/template" id="file-bread-template">
+  <ol class="breadcrumb"></ol>
+</script>
+
+<script type="text/template" id="file-bread-link-template">
+    <li><a id="<%= title %>" href="#"><%= title %></a></li>
 </script>
 
 <script type="text/template" id="file-version-template">
