@@ -1,57 +1,3 @@
-var LinkAppView = Backbone.View.extend({
-
-    el: "#link-app",
-
-    events: {
-
-    },
-
-    template: _.template($('#link-app-template').html()),
-
-    initialize: function() {
-    },
-
-    render: function() {
-      this.$el.html(this.template());
-    },
-
-    renderLinks: function() {
-      this.linksView = new LinksView();
-      this.$el.find("#linkAppViewWrapper").html(this.linksView.render().el);
-    },
-
-    renderLink: function(link) {
-      this.linkView = new LinkView({model: link});
-      this.$el.find("#linkAppViewWrapper").html(this.linkView.render().el);
-    },
-
-    showLink: function(linkId) {
-      console.log("Show the link " + linkId);
-      var self = this;
-      var link = links.get(linkId);
-
-      var link = new Link({id: linkId});
-      link.fetch({'success': function() {
-          links.remove(link);
-          links.add(link);
-          self.renderLink(link);
-      }});
-    },
-
-    showLinks: function() {
-      // this.linkApp.render();
-      this.renderLinks();
-      links.fetch();
-    },
-
-    onClose: function() {
-      if (this.linkView) {
-        this.linkView.close();
-      }
-    }
-
-});
-
 var FileAppView = Backbone.View.extend({
 
     el: "#file-app",
@@ -93,7 +39,7 @@ var FileAppView = Backbone.View.extend({
       this.providerView = new providerView({collection: files});
 
       this.$el.find("#uploaderView").html(this.uploaderView.render().el);
-      this.$el.find("#providerView").html(this.providerView.render().el);
+      this.$el.find("#providerListView").html(this.providerView.render().el);
     },
 
     renderFile: function(file) {
@@ -226,22 +172,22 @@ var AppView = Backbone.View.extend({
 
     initialize: function() {
       this.fileApp = new FileAppView();
-      this.linkApp = new LinkAppView();
+      // this.linkApp = new LinkAppView();
     },
 
     render: function() {
       this.fileApp.render();
-      this.linkApp.render();
+      // this.linkApp.render();
     },
 
     initFiles: function() {
-      this.linkApp.$el.hide();
+      // this.linkApp.$el.hide();
       this.fileApp.$el.show();
     },
 
     initLinks: function() {
       this.fileApp.$el.hide();
-      this.linkApp.$el.show();
+      // this.linkApp.$el.show();
     }
 });
 
