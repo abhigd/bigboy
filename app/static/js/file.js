@@ -104,12 +104,7 @@ var fileView = Backbone.View.extend({
     },
 
     render: function() {
-      if (this.model.get("source")) {
-        this.$el.html(this.fileTemplate(this.model.toJSON()));
-        this.renderFileMeta();
-      } else {
-        this.$el.html(this.uploadTemplate(this.model.toJSON()));
-      }
+      this.$el.html(this.fileTemplate(this.model.toJSON()));
       this.$el.prop('id', this.model.get("id"));
 
       return this;
