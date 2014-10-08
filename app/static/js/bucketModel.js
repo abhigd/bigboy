@@ -53,8 +53,6 @@ var BucketKeys = Backbone.Collection.extend({
 
     model: BucketKey,
 
-    prefixes: [],
-
     initialize: function(models, options) {
         options = options || {};
 
@@ -66,8 +64,10 @@ var BucketKeys = Backbone.Collection.extend({
         this.filter = options.filter;
         this.prefix = "";
 
-        _.bindAll(this, 'fetchNextPage');
+        _.bindAll(this, 'fetchNextPage', 'setPrefixes', 'setKeys');
     },
+
+    comparator: "title",
 
     sync: function(method, model, options) {
         var options = options || {};
@@ -94,22 +94,46 @@ var BucketKeys = Backbone.Collection.extend({
                 // more records and if marker was specified other wise,
                 // reset the collection.
                 var _collection = this;
+
                 this.s3.listObjects(params, function(err, data) {
                   if (err) console.log(err, err.stack); // an error occurred
                   else {
-                    console.log(data.Contents);
-                    _collection.set(data.Contents);
-                    _collection.prefixes = data.CommonPrefixes;
-                    console.log(data.CommonPrefixes);
+                    _collection.setKeys(data.Contents);
+                    _collection.setPrefixes(data.CommonPrefixes);
                   }
                 });
         }
     },
 
-    fetchNextPage: function(){
+    fetchNextPage: function(prefix, delimiter, maxKeys) {
         console.log(this);
         var marker = this.at(this.length-1).get("Key");
         this.fetch({marker: marker});
+    },
+
+    fetchPreviousPage: function(prefix, delimiter, maxKeys) {
+        //
+    },
+
+    setPrefixes: function(data) {
+        // var _this = this;
+        _.each(data, function(e, i, l) {
+            e["id"] =  e['Prefix'];
+            e["title"] = e['Prefix'].replace("/", "");
+            e["type"] = "folder";
+            e["bucket"] = this.bucket;
+            this.add(e);
+        }, this);
+    },
+
+    setKeys: function(data) {
+        _.each(data, function(e, i, l) {
+            e["id"] = e["Key"];
+            e["title"] = e['Key'];
+            e["type"] = "file";
+            e["bucket"] = this.bucket;
+            this.add(e);
+        }, this);
     }
 
 });
