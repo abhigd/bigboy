@@ -292,11 +292,11 @@ var providerView = baseBucketView.extend({
     },
 
     render: function() {
-      this.$el.html(this.template());
-
-      this.collection.each(function(model) {
-        this.addOne(model);
-      }, this);
+      this.$el.addClass('file-list container-fluid');
+      var breadView = new FileBreadCrumbView({
+        collection: this.collection
+      });
+      breadView.render();
 
       return this;
     },
@@ -396,6 +396,51 @@ var providerView = baseBucketView.extend({
 
     toggleSelectAll: function(isChecked) {
         this.$el.find(".file-selector input").prop('checked', isChecked).change();
+    },
+
+    navigate: function(path) {
+      this.collection.fetch({prefix: path, reset: true});
+    }
+});
+
+var FileBreadCrumbView = Backbone.View.extend({
+
+    el: "#actionbar-breadcrumb",
+
+    template: _.template($('#file-bread-template').html()),
+    linkTemplate: _.template($('#file-bread-link-template').html()),
+
+    events: {
+      "click li a": "jumpToFolder",
+    },
+
+    initialize: function() {
+      _.bindAll(this, 'jumpToFolder', 'render');
+
+      this.listenTo(this.collection, 'reset', this.render);
+    },
+
+    render: function() {
+      var crumbs = this.collection.currentPrefix.split("/");
+      this.$el.html(this.template());
+
+      _.each(crumbs, function(x) {
+        this.$el.find('.breadcrumb').append(this.linkTemplate({title: x}));
+      }, this);
+
+    },
+
+    jumpToFolder: function(e) {
+      var id = $(e.currentTarget).attr("id");
+      var crumbs = $(e.currentTarget).parent().prevAll();
+      var links = [id];
+
+      _.each(crumbs, function(x) {
+        links.unshift($(x).find("a").attr("id"));
+      });
+
+      console.log(links.join("/")+"/");
+      this.collection.fetch({prefix: links.join("/")+"/", reset: true});
     }
 });
 
