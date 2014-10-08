@@ -113,33 +113,6 @@ var fileView = Backbone.View.extend({
     },
 
     renderFileMeta: function() {
-      this.renderWho();
-      this.renderWhen();
-      this.renderKind();
-      this.renderWhere();
-    },
-
-    renderWho: function() {
-      // Render the owner of the file and the timestamp
-      // TODO
-        // var userId = this.model.get("owner");
-        // var userEl = this.$el.find(".file-who-info");
-        // var userInfo = new UserInlineView({'el': userEl, 'userId': userId});
-        // userInfo.render();
-    },
-
-    renderWhen: function() {
-      var at = this.model.get("created_h");
-      var whenEl = this.$el.find(".file-when-info");
-      whenEl.html("<span>"+at+"</span>");
-    },
-
-    renderKind: function() {
-      // Render the File type, size, shasum etc
-    },
-
-    renderWhere: function() {
-      // Render the tags, tubs that this file belongs to
     },
 
     renderProgress: function(file) {
