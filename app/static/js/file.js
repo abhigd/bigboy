@@ -1,3 +1,16 @@
+var baseBucketView = Backbone.View.extend({
+
+  s3: undefined,
+
+  getS3: function() {
+    return new AWS.S3({
+          accessKeyId: root_creds["access_key"],
+          secretAccessKey: root_creds["secret_key"],
+          sessionToken: root_creds["session_token"]
+    });
+  }
+});
+
 var uploadView = Backbone.View.extend({
 
   el: "<input type='file' class='file-input' multiple/>",
