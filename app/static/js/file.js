@@ -92,12 +92,15 @@ var fileView = Backbone.View.extend({
     uploadTemplate: _.template($('#upload-file-template').html()),
     fileTemplate: _.template($('#file-template').html()),
 
-    initialize: function() {
-      _.bindAll(this, 'showFile');
+    initialize: function(options) {
+      this.parent = options.parent;
 
-      this.listenTo(this.model, 'destroy', this.remove);
+      _.bindAll(this, 'showFile', '_remove');
+
+      this.listenTo(this.model, 'remove', this._remove);
       this.listenTo(this.model, 'change:progress', this.renderProgress);
       this.listenTo(this.model, 'change:uploadStatus', this.renderUploadStatus);
+      this.listenTo(this.model.collection, 'reset', this.remove);
     },
 
     render: function() {
@@ -137,13 +140,19 @@ var fileView = Backbone.View.extend({
       }
     },
 
-    remove: function() {
-      this.$el.remove();
+    _remove: function() {
+      this.remove();
     },
 
-    showFile: function() {
-      app.router.navigate("files/"+this.model.get("id"), {"trigger": true});
+    showFile: function(e) {
+      // app.router.navigate("files/"+this.model.get("id"), {"trigger": true});
+      if (this.model.get("type") == "folder") {
+        this.parent.trigger("navigate", this.model.get("id"));
+      }else{
+        //Let the app router handle it
+      }
 
+      e.preventDefault();
       return false;
     },
 
@@ -254,25 +263,32 @@ var uploaderView = Backbone.View.extend({
 
 });
 
-var providerView = Backbone.View.extend({
-
-    collection: files,
+var providerView = baseBucketView.extend({
 
     events: {
       "change .file-select input": "fileSelected",
     },
 
-    template: _.template('<div class="file-list container-fluid"></div>'),
+    currentFolder: "",
 
     initialize: function() {
-      _.bindAll(this, 'sync', 'addOne', 'removeOne', 'deleteFiles', 'toggleSelectAll');
+      _.bindAll(this, 'sync', 'addOne', 'deleteFiles');
       _.bindAll(this, 'previous', 'next', 'fileSelected', 'render');
+      _.bindAll(this, 'toggleSelectAll', 'navigate');
+
+      this.bucket_name = "meer-sg-1";
+      var s3 = this.getS3();
+      this.collection = new BucketKeys([], {
+        bucket: this.bucket_name,
+        s3: s3
+      });
 
       this.collection.bind('sync', this.sync);
       this.collection.bind('add', this.addOne);
-      this.collection.bind('remove', this.removeOne);
+      // this.collection.bind('reset', this.reset);
 
       this.on("selectAll", this.toggleSelectAll);
+      this.collection.fetch({prefix: this.currentFolder});
     },
 
     render: function() {
@@ -286,20 +302,15 @@ var providerView = Backbone.View.extend({
     },
 
     addOne: function(file) {
-      var view = new fileView({model: file});
+      var view = new fileView({model: file, parent: this});
       var idx = this.collection.indexOf(file);
 
-      if (idx == 0) {
-        this.$(".file-list").prepend(view.render().el);
+      if (idx === 0) {
+        this.$el.prepend(view.render().el);
       } else {
-        this.$(".file-list").append(view.render().el);
+        this.$el.append(view.render().el);
       }
 
-    },
-
-    removeOne: function(file) {
-      var id = file.get("id");
-      this.$("#"+id).remove();
     },
 
     sync: function() {
@@ -314,7 +325,7 @@ var providerView = Backbone.View.extend({
     },
 
     next: function() {
-      this.collection.nextPage();
+      this.collection.fetchNextPage();
 
       return false;
     },
