@@ -87,7 +87,7 @@ def startup():
 
         current_app.session_interface = RedisSessionInterface(redis_client)
         # print app.config.get("ENVIRONMENT")
-        from app.views import auth, files, link, user
+        from app.views import auth, files, bucket, link, user
         app.run('0.0.0.0', current_app.config.get('PORT'))
 
 def load_config():

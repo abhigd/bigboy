@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block scripts %}
+    <script type="text/javascript" src="/static/js/aws-sdk.js"></script>
+    <script type="text/javascript" src="/static/js/BigBoyUploader.js"></script>
+    <script type="text/javascript" src="/static/js/bucketModel.js"></script>
+    <script type="text/javascript" src="/static/js/fileModel.js"></script>
+    <script type="text/javascript" src="/static/js/file.js"></script>
+
+    <script type="text/javascript" src="/static/js/app.js"></script>
+{% endblock %}
+{% block content %}
+    <script>
+        var root_creds = {{ token|safe }};
+
+    </script>
+    {{ super() }}
+{% endblock %}
