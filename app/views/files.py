@@ -79,7 +79,7 @@ def upload_part():
 
     return jsonify(response_data)
 
-@app.route('/')
+# @app.route('/')
 @app.route('/files/', methods=['GET'])
 @login_required
 def list_files():
