@@ -49,7 +49,7 @@ var uploadView = Backbone.View.extend({
           'file_idx': i,
           'progress': -1
         })
-      )
+      );
     }, this);
 
     $(currentTargetFile).BigBoyUploader({
@@ -64,11 +64,11 @@ var uploadView = Backbone.View.extend({
       },
       onFileComplete: function(key, fileIdx, result) {
         var file = self.collection.findWhere({'input_id': self.fileId, 'file_idx': fileIdx});
-        var uploadStatus = result == true?1:0
+        var uploadStatus = result === true?1:0;
         file.set({progress: 100, key: key, uploadStatus: uploadStatus});
 
-        console.log("File Completed " + key + " fileIdx " + fileIdx
-          + " status " + result);
+        console.log("File Completed " + key + " fileIdx " + fileIdx +
+          " status " + result);
       },
       onProgress: function(key, fileIdx, progressPercent) {
         var file = self.collection.findWhere({'input_id': self.fileId, 'file_idx': fileIdx});
@@ -122,7 +122,6 @@ var fileView = Backbone.View.extend({
       var progress = file.get('progress');
 
       if (progress == -1) {
-        // Show a spinnngin render
       } else {
         this.$el.find(".upload-file-progress span.percent").html(file.get("progress")+"%");
       }
@@ -198,7 +197,7 @@ var uploaderView = Backbone.View.extend({
       this.listenTo(this.collection, "add", this.addOne);
       this.listenTo(this.collection, "remove", this.removeOne);
       this.listenTo(this.collection, "change:uploadStatus", this.updateStatus);
-      this.listenTo(this.collection, "change:progress", this.updateProgress)
+      this.listenTo(this.collection, "change:progress", this.updateProgress);
 
       // this.on('upload-start')
       this.on('upload-complete', this.uploadComplete);
@@ -288,6 +287,7 @@ var providerView = baseBucketView.extend({
       // this.collection.bind('reset', this.reset);
 
       this.on("selectAll", this.toggleSelectAll);
+      this.on("navigate", this.navigate);
       this.collection.fetch({prefix: this.currentFolder});
     },
 
