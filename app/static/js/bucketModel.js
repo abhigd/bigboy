@@ -10,8 +10,6 @@
 
 var BucketKey = Backbone.Model.extend({
 
-    idAttribute: "Key",
-
     sync: function(method, model, options) {
         switch (method) {
             case "update":
@@ -53,6 +51,8 @@ var BucketKeys = Backbone.Collection.extend({
 
     model: BucketKey,
 
+    currentPrefix: "",
+
     initialize: function(models, options) {
         options = options || {};
 
@@ -62,7 +62,6 @@ var BucketKeys = Backbone.Collection.extend({
         this.marker = "";
         this.delimiter = "/";
         this.filter = options.filter;
-        this.prefix = "";
 
         _.bindAll(this, 'fetchNextPage', 'setPrefixes', 'setKeys');
     },
@@ -79,8 +78,9 @@ var BucketKeys = Backbone.Collection.extend({
                 break;
             case "read":
                 var marker = options.marker || this.marker;
-                var prefix = options.prefix || this.prefix;
+                var prefix = options.prefix || this.currentPrefix;
                 var delimiter = options.delimiter || this.delimiter;
+                var reset = options.reset || false;
 
                 var params = {
                   Bucket: this.bucket,
@@ -89,7 +89,6 @@ var BucketKeys = Backbone.Collection.extend({
                   Marker: marker,
                   Delimiter: delimiter
                 };
-
                 // Add keys as models to this collection if there are
                 // more records and if marker was specified other wise,
                 // reset the collection.
@@ -98,6 +97,10 @@ var BucketKeys = Backbone.Collection.extend({
                 this.s3.listObjects(params, function(err, data) {
                   if (err) console.log(err, err.stack); // an error occurred
                   else {
+                    _collection.currentPrefix = prefix;
+                    if (reset === true) {
+                        _collection.reset();
+                    }
                     _collection.setKeys(data.Contents);
                     _collection.setPrefixes(data.CommonPrefixes);
                   }
@@ -106,8 +109,7 @@ var BucketKeys = Backbone.Collection.extend({
     },
 
     fetchNextPage: function(prefix, delimiter, maxKeys) {
-        console.log(this);
-        var marker = this.at(this.length-1).get("Key");
+        var marker = this.at(this.length-1).get("id");
         this.fetch({marker: marker});
     },
 
@@ -116,10 +118,16 @@ var BucketKeys = Backbone.Collection.extend({
     },
 
     setPrefixes: function(data) {
-        // var _this = this;
         _.each(data, function(e, i, l) {
+            var splitBy = this.currentPrefix === "" ? "/" : this.currentPrefix;
+
+            if (this.currentPrefix === "") {
+                e["title"] = e['Prefix'];
+            } else {
+                e["title"] = e['Prefix'].split(splitBy).pop();
+            }
+
             e["id"] =  e['Prefix'];
-            e["title"] = e['Prefix'].replace("/", "");
             e["type"] = "folder";
             e["bucket"] = this.bucket;
             this.add(e);
@@ -129,7 +137,9 @@ var BucketKeys = Backbone.Collection.extend({
     setKeys: function(data) {
         _.each(data, function(e, i, l) {
             e["id"] = e["Key"];
-            e["title"] = e['Key'];
+
+            var splitBy = this.currentPrefix === "" ? "/" : this.currentPrefix;
+            e["title"] = e['Key'].split(splitBy).pop();
             e["type"] = "file";
             e["bucket"] = this.bucket;
             this.add(e);
