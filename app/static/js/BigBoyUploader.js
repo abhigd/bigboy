@@ -109,20 +109,24 @@
         if (this.options.s3_key)
           initPayload.key = this.options.s3_key;
 
-        $.ajax({
-          url: this.options.urlPath+"?phase=init",
-          type: "POST",
-          contentType: "application/json",
-          data: JSON.stringify(initPayload),
-          processData: false
-        }).then(function(data) {
-          initWorkers(data);
+        var params = {
+          Bucket: this.options.bucket,
+          Key: file.name,
+          ContentType: file.type,
+          ServerSideEncryption: 'AES256',
+          StorageClass: 'REDUCED_REDUNDANCY'
+        };
+        this.options.s3.createMultipartUpload(params, function(err, data) {
+          if (err) console.log(err, err.stack); // an error occurred
+          else {
+            initWorkers(data);
+          }
         });
 
         var initWorkers = function(data) {
-          self.key = data.key;
-          upId = data.id;
-          bucket = data.bucket;
+          self.key = data.Key;
+          upId = data.UploadId;
+          bucket = data.Bucket;
 
           for (var i = 0; i < workerCount; i++) {
             var worker = new Worker('/static/js/partUploadWorker.js?ts='+ new Date().getTime());
@@ -184,18 +188,43 @@
         };
 
         var finishUpload = function() {
-          //TODO: Move start and finish upload to web worker
-        $.ajax({
-          url: self.options.urlPath+"?phase=complete",
-          type: "POST",
-          contentType: "application/json",
-          data: JSON.stringify({'s3_key': self.key, 'mp_id': upId}),
-          processData: false
-        }).then(function(data) {
-            self._completeFileUpload(true);
-          }, function(data) {
-            self._completeFileUpload(false);
+          var params = {
+            Bucket: bucket,
+            Key: self.key,
+            UploadId: upId,
+          };
+          self.options.s3.listParts(params, function(err, data) {
+            if (err) console.log(err, err.stack); // an error occurred
+            else {
+              var uploadedParts = data.Parts;
+              var parts = [];
+              uploadedParts.forEach(function(e){
+                parts.push({
+                  "ETag": e.ETag,
+                  "PartNumber": e.PartNumber
+                });
+              });
+
+              var params = {
+                Bucket: data.Bucket,
+                Key: data.Key,
+                UploadId: data.UploadId,
+                MultipartUpload: {
+                  Parts: parts
+                }
+              };
+              self.options.s3.completeMultipartUpload(params, function(err, data) {
+                if (err) {
+                  self._completeFileUpload(false);
+                  console.error(err, err.stack); // an error occurred
+                }
+                else {
+                  self._completeFileUpload(true);
+                }
+              });
+            }
           });
+          //TODO: Move start and finish upload to web worker
         };
       };
 
