@@ -9,6 +9,7 @@
       this._files = this.elem.files;
       this._filesCount = this._files.length;
       this.key = null;
+      this.s3 = null;
 
       var reader;
 
@@ -21,7 +22,7 @@
             if (pointer <= size) {
               start = pointer;
               if (size-pointer < step) {
-                end = pointer+(size-pointer)
+                end = pointer+(size-pointer);
               }else {
                 end = pointer+step;
               }
@@ -32,7 +33,7 @@
             } else {
               throw "End of file";
             }
-          }
+          };
       };
 
       this.start = function() {
@@ -60,7 +61,7 @@
 
         this.options.onFileStart.call(this, this._currentFileInUpload);
         this._currentFileInUpload++;
-      }
+      };
 
       this._formUpload = function(file) {
         var fileSize = file.size;
@@ -84,17 +85,17 @@
               self._completeFileUpload(false);
               break;
             case "debug":
-              console.log(e.data)
+              console.log(e.data);
               break;
 
           }
         };
 
         if (this.options.s3_key)
-          initPayload.key = this.options.s3_key
+          initPayload.key = this.options.s3_key;
 
         worker.postMessage(initPayload);
-      }
+      };
 
       this._multiPartUpload = function(file) {
         var fileSize = file.size,
@@ -106,7 +107,7 @@
         var workerCount = fileSize/fileChunkSize > 4 ? 4: Math.ceil(fileSize/fileChunkSize);
 
         if (this.options.s3_key)
-          initPayload.key = this.options.s3_key
+          initPayload.key = this.options.s3_key;
 
         $.ajax({
           url: this.options.urlPath+"?phase=init",
@@ -133,7 +134,7 @@
                     feedNextChunk(worker, nextChunk);
                   }
                   catch (e) {
-                    countWorkers()
+                    countWorkers();
                   }
                   break;
                 case "progress":
@@ -143,13 +144,13 @@
                   self.options.onProgress.call(self, self.key, fileIdx, percentLoaded);
                   break;
                 case "hash":
-                  console.log(e.data.data)
+                  console.log(e.data.data);
                   break;
                 case "failure":
-                  console.warn(e.data)
+                  console.warn(e.data);
                   break;
                 case "debug":
-                  console.log(e.data)
+                  console.log(e.data);
                   break;
               }
             };
@@ -177,7 +178,7 @@
         var countWorkers = function() {
           workerCount = workerCount - 1;
           // worker.terminate();
-          if (workerCount == 0) {
+          if (workerCount === 0) {
             finishUpload();
           }
         };
@@ -196,13 +197,13 @@
             self._completeFileUpload(false);
           });
         };
-      }
+      };
 
       this._completeFileUpload = function(success) {
         var fileIdx = this._currentFileInUpload - 1;
         this.options.onFileComplete.call(this, this.key, fileIdx, success);
         this._processNextFile();
-      }
+      };
     };
 
   BigBoyUploader.prototype = {
@@ -221,7 +222,7 @@
 
       return this;
     }
-  }
+  };
 
   BigBoyUploader.defaults = BigBoyUploader.prototype.defaults;
 
