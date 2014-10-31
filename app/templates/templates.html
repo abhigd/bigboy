@@ -12,17 +12,6 @@
 <script type="text/template" id="files-base-template">
     <div id="actionbar" class="navbar navbar-default">
         <div class="container-fluid">
-          <ul class="nav navbar-nav">
-            <li class="dropdown active">
-              <a href="/files/" class="dropdown-toggle" data-toggle="dropdown">My Files <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="/files/?kind=document">Documents</a></li>
-                <li><a href="/files/?kind=image">Images</a></li>
-                <li class="divider"></li>
-                <li><a href="/files/?by=all">Everyone&lsquo;s Files</a></li>
-              </ul>
-            </li>
-          </ul>
           <ul id="actionbar-breadcrumb" class="nav">
           </ul>
           <div class="btn-group navbar-right">
@@ -34,7 +23,10 @@
         </div>
     </div>
     <div id="uploaderView"></div>
-    <div id="providerView"></div>
+    <div id="providerView">
+      <div id="providerListView"></div>
+      <div id="providerHelperView"></div>
+    </div>
     <div id="navigationbar" class="navbar navbar-default">
         <div class="col-xs-7 col-md-9">
           <div class="btn-group">
@@ -87,12 +79,12 @@
 
 <script type="text/template" id="file-template">
     <div class="col-xs-1 col-sm-1 col-md-1 file-selector">
-        <i class="el-icon-check-empty file-select" ><input type="checkbox" data-id="<%= id %>" style="display: none"/>
+        <i class="el-icon-check-empty file-select" ><input type="checkbox" data-id="<%= title %>" style="display: none"/>
         </i>
     </div>
 
     <div class="col-xs-11 col-sm-9 col-md-9 file-title">
-      <a href="/files/<%= id %>" class="file-link"><%=title %></a>
+      <a hrefs="/files/<%= id %>" class="file-link"><%=title %></a>
     </div>
 
     <div class="hidden-xs col-sm-2 col-md-2 file-meta">
@@ -416,29 +408,6 @@
     <div class="panel-footer">Limits on files that your visitors may upload.</div>
   </div>
 </div>
-</script>
-
-<script type="text/template" id="links-base-template">
-    <div id="actionbar" class="navbar">
-        <div class="navbar-inner">
-            <a class="brand" href="#">Links</a>
-            <ul class="nav pull-right">
-            </ul>
-        </div>
-    </div>
-    <div style="background-color: rgba(250, 250, 250, 0.93);">
-        <div class="file-list" style="padding-left: 50%">
-            <p style="display: table-cell; height: 30em; vertical-align: middle">
-                List Links here
-            </p>
-        </div>
-    </div>
-    <div id="navigationbar" class="navbar">
-        <div class="navbar-inner">
-            <ul class="nav">
-            </ul>
-        </div>
-    </div>
 </script>
 
 <script type="text/template" id="link-message-template">
