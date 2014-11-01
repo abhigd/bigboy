@@ -12,8 +12,7 @@
 <script type="text/template" id="files-base-template">
     <div id="actionbar" class="navbar navbar-default">
         <div class="container-fluid">
-          <ul id="actionbar-breadcrumb" class="nav">
-          </ul>
+          <ul id="actionbar-breadcrumb" class="navbar-left" style="margin: 0; padding: 0;"></ul>
           <div class="btn-group navbar-right">
             <button id="upload-btn" class="upload-btn navbar-btn btn btn-info">
                 <i class="el-icon-upload"></i>
@@ -202,11 +201,13 @@
 </script>
 
 <script type="text/template" id="file-bread-template">
-  <ol class="breadcrumb"></ol>
+  <ol class="breadcrumb" style="margin: 8px 0">
+    <li class="home"><a id="/" href="#">#</a></li>
+  </ol>
 </script>
 
 <script type="text/template" id="file-bread-link-template">
-    <li><a id="<%= title %>" href="#"><%= title %></a></li>
+    <li class="folder"><a id="<%= title %>" href="#"><%= title %></a></li>
 </script>
 
 <script type="text/template" id="file-version-template">
