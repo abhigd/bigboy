@@ -78,9 +78,12 @@ var BucketKeys = Backbone.Collection.extend({
                 break;
             case "read":
                 var marker = options.marker || this.marker;
-                var prefix = options.prefix || this.currentPrefix;
                 var delimiter = options.delimiter || this.delimiter;
                 var reset = options.reset || false;
+                var prefix = "";
+                if (options.prefix !== "") {
+                    prefix = options.prefix || this.currentPrefix;
+                }
 
                 var params = {
                   Bucket: this.bucket,
