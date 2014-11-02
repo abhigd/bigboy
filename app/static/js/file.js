@@ -440,7 +440,16 @@ var FileBreadCrumbView = Backbone.View.extend({
     jumpToFolder: function(e) {
       var id = $(e.currentTarget).attr("id");
       var crumbs = $(e.currentTarget).parent().prevAll().filter(".folder");
+      var links = [id];
+      var prefix = "";
 
+      if (id !== "/") {
+        _.each(crumbs, function(x) {
+          links.unshift($(x).find("a").attr("id"));
+        });
+      }
+
+      this.collection.fetch({prefix: links.join("/")+"/", reset: true});
     }
 });
 
