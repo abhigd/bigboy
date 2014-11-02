@@ -189,7 +189,7 @@
           req.service.config.getCredentials(function (err, credentials) {
             var date = AWS.util.date.getDate();
             var signer = new AWS.Signers.S3(req.httpRequest);
-            var url_part = self.key + "?partNumber=" + chunk[0] +
+            var url_part = encodeURIComponent(self.key) + "?partNumber=" + chunk[0] +
               "&uploadId=" + upId;
             var url = "https://"+ bucket +
               ".s3.amazonaws.com/" + url_part;
@@ -216,8 +216,7 @@
           //   Key: self.key,
           //   PartNumber: chunk[0],
           //   UploadId: upId,
-          //   Body: blob,
-          //   // computeChecksums: true
+          //   Body: blob
           // };
 
           // var req = self.options.s3.uploadPart(params);
