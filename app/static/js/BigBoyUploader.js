@@ -116,7 +116,9 @@
           ServerSideEncryption: 'AES256',
           StorageClass: 'REDUCED_REDUNDANCY'
         };
-        this.options.s3.createMultipartUpload(params, function(err, data) {
+
+        var req = this.options.s3.createMultipartUpload(params);
+        req.send(function(err, data) {
           if (err) console.log(err, err.stack); // an error occurred
           else {
             initWorkers(data);
@@ -166,17 +168,69 @@
         };
 
         var feedNextChunk = function(worker, chunk) {
+          var params = {
+            Bucket: bucket,
+            Key: self.key,
+            PartNumber: chunk[0],
+            UploadId: upId,
+          };
           var blob = file.slice(chunk[1], chunk[2]+1);
-          worker.postMessage({
-            'blob': blob,
-            'info': [
-              chunk[0],
-              self.key,
-              upId,
-              chunk[2]-chunk[1]+1,
-              bucket
-            ]
+
+          var req = self.options.s3.uploadPart(params);
+          req.httpRequest.path = "/" + encodeURIComponent(self.key) +
+            "?partNumber=" + chunk[0] + "&uploadId=" + upId;
+
+          req.httpRequest.virtualHostedBucket = bucket;
+          req.httpRequest.method = "PUT";
+          req.httpRequest.headers["Content-Length"] = chunk[2]-chunk[1]+1;
+          req.httpRequest.headers["Content-Type"] = "application/octet-stream";
+          // req.httpRequest.headers["Content-MD5"] = e.data.hash.replace(" ", "+");
+
+          req.service.config.getCredentials(function (err, credentials) {
+            var date = AWS.util.date.getDate();
+            var signer = new AWS.Signers.S3(req.httpRequest);
+            var url_part = self.key + "?partNumber=" + chunk[0] +
+              "&uploadId=" + upId;
+            var url = "https://"+ bucket +
+              ".s3.amazonaws.com/" + url_part;
+
+            signer.addAuthorization(credentials, date);
+            console.log(signer.stringToSign());
+            worker.postMessage({
+              'blob': blob,
+              'info': [
+                chunk[0],
+                self.key,
+                upId,
+                chunk[2]-chunk[1]+1,
+                bucket
+              ],
+              'headers': req.httpRequest.headers,
+              'url': url
+            });
+
           });
+
+          // var params = {
+          //   Bucket: bucket,
+          //   Key: self.key,
+          //   PartNumber: chunk[0],
+          //   UploadId: upId,
+          //   Body: blob,
+          //   // computeChecksums: true
+          // };
+
+          // var req = self.options.s3.uploadPart(params);
+          // req.on('sign', function() {
+          //   console.log(req);
+          // });
+
+          // req.on('complete', function(response) {
+          //   console.log("Completed ");
+          //   console.log(response);
+          // });
+          // req.send();
+
         };
 
         var countWorkers = function() {

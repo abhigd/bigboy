@@ -23,6 +23,9 @@ var uploadView = Backbone.View.extend({
     this.parent = options.parent;
     this.fileId = "file-input-"+new Date().getTime();
     this.uploadUrlPath = options.uploadUrlPath || "/files/upload/";
+    this.s3 = options.s3;
+    this.bucket = options.bucket;
+    this.prefix = options.prefix;
   },
 
   render: function() {
@@ -36,7 +39,6 @@ var uploadView = Backbone.View.extend({
 
   startFileUpload: function(e) {
     var self = this;
-    console.log(new Date().getTime());
     var currentTargetFile = e.currentTarget;
 
     _.each(currentTargetFile.files, function(e, i, l) {
@@ -45,7 +47,7 @@ var uploadView = Backbone.View.extend({
           'size': e.size,
           'title': e.name,
           'type': e.type,
-          'input_id': currentTargetFile.id,
+          'input_id': self.fileId,
           'file_idx': i,
           'progress': -1
         })
@@ -53,6 +55,9 @@ var uploadView = Backbone.View.extend({
     }, this);
 
     $(currentTargetFile).BigBoyUploader({
+      s3: this.s3,
+      bucket: this.bucket,
+      prefix: this.prefix,
       urlPath: this.uploadUrlPath,
       onComplete: function() {
         console.log("All files completed");
@@ -172,7 +177,7 @@ var fileView = Backbone.View.extend({
 
 });
 
-var uploaderView = Backbone.View.extend({
+var uploaderView = baseBucketView.extend({
 
     collection: uploads,
 
@@ -189,8 +194,8 @@ var uploaderView = Backbone.View.extend({
       _.bindAll(this, 'showFilePicker', 'updateStatus', 'updateProgress');
       _.bindAll(this, 'uploadComplete');
 
-      this.listenTo(this.collection, "add", this.addOne);
-      this.listenTo(this.collection, "remove", this.removeOne);
+      // this.listenTo(this.collection, "add", this.addOne);
+      // this.listenTo(this.collection, "remove", this.removeOne);
       this.listenTo(this.collection, "change:uploadStatus", this.updateStatus);
       this.listenTo(this.collection, "change:progress", this.updateProgress);
 
@@ -224,10 +229,10 @@ var uploaderView = Backbone.View.extend({
     updateStatus: function(file) {
       var result = file.get('uploadStatus');
 
-      if (result == 1) {
-        files.create(file.attributes, {wait: true});
-        this.collection.remove(file);
-      }
+      // if (result == 1) {
+      //   files.create(file.attributes, {wait: true});
+      //   this.collection.remove(file);
+      // }
     },
 
     uploadComplete: function(uploader) {
@@ -243,7 +248,14 @@ var uploaderView = Backbone.View.extend({
     },
 
     showFilePicker: function(e) {
-      var uploader = new uploadView({collection: uploads, parent: this});
+      var bucket_name = "meer-sg-1";
+      var uploader = new uploadView({
+        collection: uploads,
+        parent: this,
+        s3: this.getS3(),
+        bucket: bucket_name,
+        prefix: ""
+      });
       this.uploaders.push(uploader);
       uploader.render();
       uploader.showFilePicker();
