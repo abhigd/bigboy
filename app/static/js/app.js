@@ -18,11 +18,6 @@ var FileAppView = Backbone.View.extend({
     initialize: function() {
       _.bindAll(this, "render", "renderBucket", "showFile", "showFiles");
 
-      this.listenTo(uploads, "add", this.renderUploadProgressCount);
-      this.listenTo(uploads, "remove", this.renderUploadProgressCount);
-      this.listenTo(uploads, 'change:uploadStatus', this.renderUploadProgressTitle);
-      this.listenTo(files, "remove", this.uncheckSelectAllCheckBox);
-
       this.on("file-selected", this.fileSelected);
       this.on("toggle-selectAll", this.toggleSelectAllOption);
     },
@@ -32,33 +27,13 @@ var FileAppView = Backbone.View.extend({
     },
 
     renderBucket: function(bucket, keyOrPrefix) {
-      // console.log("Rendering bucket " + bucket + " " + keyOrPrefix);
       this.$el.find("#fileAppViewWrapper").html(this.filesTemplate());
       this.providerView = new providerView({
         bucket: bucket,
         keyOrPrefix: keyOrPrefix
       });
 
-      this.uploaderView = new uploaderView({collection: uploads});
-      this.providerView = new providerView({collection: files});
-
-      this.$el.find("#uploaderView").html(this.uploaderView.render().el);
       this.$el.find("#providerListView").html(this.providerView.render().el);
-    },
-
-    renderFile: function(file) {
-      this.fileInfoView = new FileInfoView({
-        model: file
-      });
-      this.$el.find("#fileAppViewWrapper").html(this.fileInfoView.render().el);
-    },
-
-    deleteFiles: function() {
-      this.providerView.deleteFiles();
-    },
-
-    shareFiles: function() {
-      this.providerView.shareFiles();
     },
 
     showFilePicker: function() {
@@ -77,45 +52,14 @@ var FileAppView = Backbone.View.extend({
       return false;
     },
 
-    renderUploadProgressCount: function(file, c, options) {
-      var length = c.length;
-      if (length > 0) {
-        this.$(".upload-snippet").show();
-        this.$(".upload-snippet-count").html(length);
-      } else {
-        this.$(".upload-snippet").hide();
-        this.$('.upload-snippet-alert').hide();
-        this.$('.upload-snippet-title').html("");
-      }
-    },
-
-    renderUploadProgressTitle: function(file) {
-      if (file.get("uploadStatus") == -1) {
-        this.$('.upload-snippet-title').html(file.get("title"))
-      } else if (file.get("uploadStatus") == 0) {
-        this.$('.upload-snippet-alert').show();
-      } else if (file.get("uploadStatus") == 1) {
-        this.$('.upload-snippet-title').html("");
-      }
-    },
-
-    showFile: function(fileId) {
-      console.log("Show the file " + fileId);
+    showFile: function(bucket, key) {
+      console.log("Show the file " + key);
       var self = this;
-      var file = files.get(fileId);
-
-      var file = new File({id: fileId});
-
-      file.fetch({success: function(data){
-        files.remove(file);
-        files.add(file);
-        self.renderFile(file);
-      }});
+      self.renderBucket(bucket, key);
     },
 
-    showFiles: function() {
-      this.renderFiles();
-      files.fetch();
+    showFiles: function(bucket) {
+      this.renderBucket(bucket, "");
     },
 
     renderSelectAllOptionState: function(e) {
