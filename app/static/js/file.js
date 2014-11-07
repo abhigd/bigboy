@@ -144,11 +144,11 @@ var fileView = Backbone.View.extend({
     },
 
     showFile: function(e) {
-      // app.router.navigate("files/"+this.model.get("id"), {"trigger": true});
       if (this.model.get("type") == "folder") {
-        this.parent.trigger("navigate", this.model.get("id"));
-      }else{
-        //Let the app router handle it
+        this.parent.trigger("navigate", this.model.get("id"), true);
+      }
+      else {
+       this.parent.trigger("navigate", this.model.get("id"), false);
       }
 
       e.preventDefault();
@@ -277,12 +277,21 @@ var providerView = baseBucketView.extend({
 
     currentFolder: "",
 
-    initialize: function() {
+    initialize: function(options) {
       _.bindAll(this, 'sync', 'addOne', 'deleteFiles');
       _.bindAll(this, 'previous', 'next', 'fileSelected', 'render');
       _.bindAll(this, 'toggleSelectAll', 'navigate');
 
-      this.bucket_name = "meer-sg-1";
+      this.bucket_name = options.bucket;
+      var path = options.keyOrPrefix || "";
+
+      if (path.endsWith("/")) {
+        this.prefix = path;
+      } else {
+        // Get the prefix holding this key
+        this.prefix = path.slice(0, path.lastIndexOf("/")+1);
+      }
+
       var s3 = this.getS3();
       this.collection = new BucketKeys([], {
         bucket: this.bucket_name,
@@ -295,13 +304,15 @@ var providerView = baseBucketView.extend({
 
       this.on("selectAll", this.toggleSelectAll);
       this.on("navigate", this.navigate);
-      this.collection.fetch({prefix: this.currentFolder});
+      this.collection.fetch({prefix: this.prefix});
+
     },
 
     render: function() {
       this.$el.addClass('file-list container-fluid');
       var breadView = new FileBreadCrumbView({
-        collection: this.collection
+        prefix: this.prefix,
+        parent: this
       });
       breadView.render();
 
@@ -405,8 +416,12 @@ var providerView = baseBucketView.extend({
         this.$el.find(".file-selector input").prop('checked', isChecked).change();
     },
 
-    navigate: function(path) {
-      this.collection.fetch({prefix: path, reset: true});
+    navigate: function(path, isPrefix) {
+      if (path.substring(0, 1) != "/") {
+        path = "/" + path;
+      }
+
+      app.router.navigate("bucket/" + this.bucket_name + path, {trigger: true});
     }
 });
 
@@ -421,14 +436,15 @@ var FileBreadCrumbView = Backbone.View.extend({
       "click li a": "jumpToFolder",
     },
 
-    initialize: function() {
-      _.bindAll(this, 'jumpToFolder', 'render');
+    initialize: function(options) {
+      this.parent = options.parent;
+      this.prefix = options.prefix;
 
       this.listenTo(this.collection, 'reset', this.render);
     },
 
     render: function() {
-      var crumbs = this.collection.currentPrefix.split("/");
+      var crumbs = this.prefix.split("/");
       this.$el.html(this.template());
 
       _.each(crumbs, function(x) {
@@ -560,8 +576,11 @@ var FileInfoView = Backbone.View.extend({
     toggleDeleteButton: function(enableButton) {
       if (enableButton) {
         this.$el.find("#delete-shares-button").removeClass("disabled");
+        // this.collection.fetch({prefix: links.join("/")+"/", reset: true});
+        this.parent.navigate(links.join("/")+"/");
       } else {
-        this.$el.find("#delete-shares-button").addClass("disabled");
+        // this.collection.fetch({prefix: "", reset: true});
+        this.parent.navigate("/");
       }
     },
 
