@@ -16,8 +16,7 @@ var FileAppView = Backbone.View.extend({
     filesTemplate: _.template($('#files-base-template').html()),
 
     initialize: function() {
-      _.bindAll(this, "render", "renderFiles", "renderFile");
-      _.bindAll(this, "renderUploadProgressCount", "renderUploadProgressTitle");
+      _.bindAll(this, "render", "renderBucket", "showFile", "showFiles");
 
       this.listenTo(uploads, "add", this.renderUploadProgressCount);
       this.listenTo(uploads, "remove", this.renderUploadProgressCount);
@@ -32,8 +31,13 @@ var FileAppView = Backbone.View.extend({
       this.$el.html(this.template());
     },
 
-    renderFiles: function() {
+    renderBucket: function(bucket, keyOrPrefix) {
+      // console.log("Rendering bucket " + bucket + " " + keyOrPrefix);
       this.$el.find("#fileAppViewWrapper").html(this.filesTemplate());
+      this.providerView = new providerView({
+        bucket: bucket,
+        keyOrPrefix: keyOrPrefix
+      });
 
       this.uploaderView = new uploaderView({collection: uploads});
       this.providerView = new providerView({collection: files});
@@ -194,42 +198,28 @@ var AppView = Backbone.View.extend({
 var AppRouter = Backbone.Router.extend({
 
   routes: {
-    "files/:file" : "file",
-    "files/"      : "fileIndex",
-    "link/:link"  : "link",
-    "link/"       : "linkIndex",
-    "test/:test"  : "test",
-    ""            : "fileIndex",
+    "bucket/:bucket/*key" : "renderBucketWithKey",
+    "bucket/:bucket(/)" : "renderBucket",
+    "help"                : "help"
   },
 
-  fileIndex: function() {
-    console.log("Show all my files ");
+  help: function() {
+    console.log("Hello help");
+  },
+
+  renderBucket: function(bucket) {
+    console.log("renderBucket " + bucket);
+
     app.initFiles();
-    app.fileApp.showFiles();
+    app.fileApp.showFile(bucket);
   },
 
-  file: function(file) {
-    console.log("Show file")
+  renderBucketWithKey: function(bucket, key) {
+    console.log("renderBucketWithKey " + bucket + " " + key);
+
     app.initFiles();
-    app.fileApp.showFile(file);
-  },
-
-  linkIndex: function() {
-    console.log("Show all links");
-    app.initLinks();
-    app.linkApp.showLinks();
-  },
-
-  link: function(link) {
-    console.log("Show link");
-    app.initLinks();
-    app.linkApp.showLink(link);
-  },
-
-  test: function(test) {
-    console.log("Show Link Usage")
+    app.fileApp.showFile(bucket, key);
   }
-
 });
 
 
@@ -250,4 +240,4 @@ Backbone.View.prototype.close = function(){
   if (this.onClose){
     this.onClose();
   }
-}
+};
