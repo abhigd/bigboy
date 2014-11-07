@@ -150,7 +150,6 @@ var fileView = Backbone.View.extend({
       else {
        this.parent.trigger("navigate", this.model.get("id"), false);
       }
-
       e.preventDefault();
       return false;
     },
@@ -300,7 +299,6 @@ var providerView = baseBucketView.extend({
 
       this.collection.bind('sync', this.sync);
       this.collection.bind('add', this.addOne);
-      // this.collection.bind('reset', this.reset);
 
       this.on("selectAll", this.toggleSelectAll);
       this.on("navigate", this.navigate);
@@ -310,6 +308,7 @@ var providerView = baseBucketView.extend({
 
     render: function() {
       this.$el.addClass('file-list container-fluid');
+
       var breadView = new FileBreadCrumbView({
         prefix: this.prefix,
         parent: this
@@ -380,36 +379,6 @@ var providerView = baseBucketView.extend({
     },
 
     shareFiles: function() {
-      var now = new Date().getTime()/1000;
-      var expiresIn = new Date((now + 3600)*1000).getTime()/1000;
-      var selectedFiles = this.$('.el-icon-check input');
-      var targets = [];
-
-      _.each(selectedFiles, function(elem) {
-          var id = this.$(elem).data("id");
-          targets.push(id);
-      }, this);
-
-      var link = new Link({
-        "target": targets.join(),
-        "expires_in": expiresIn
-      });
-
-      link.save({}, {success: function(model){
-        var linkId = model.id;
-        app.router.navigate("link/"+linkId, {"trigger": true});
-      }, wait: true});
-
-      //   this.links.create({
-      //     "target": target,
-      //     "expires_in": expiresIn
-      //   }, {wait: true});
-
-      //     var f = files.get(id);
-      //     f.destroy({wait: true});
-      //     files.remove(f);
-      //     app.fileApp.trigger("toggle-selectAll", false);
-      // files.fetch();
     },
 
     toggleSelectAll: function(isChecked) {
@@ -440,7 +409,8 @@ var FileBreadCrumbView = Backbone.View.extend({
       this.parent = options.parent;
       this.prefix = options.prefix;
 
-      this.listenTo(this.collection, 'reset', this.render);
+      _.bindAll(this, 'jumpToFolder', 'render');
+      // this.listenTo(this.collection, 'reset', this.render);
     },
 
     render: function() {
@@ -450,7 +420,6 @@ var FileBreadCrumbView = Backbone.View.extend({
       _.each(crumbs, function(x) {
         this.$el.find('.breadcrumb').append(this.linkTemplate({title: x}));
       }, this);
-
     },
 
     jumpToFolder: function(e) {
@@ -463,254 +432,13 @@ var FileBreadCrumbView = Backbone.View.extend({
         _.each(crumbs, function(x) {
           links.unshift($(x).find("a").attr("id"));
         });
-      }
-
-      this.collection.fetch({prefix: links.join("/")+"/", reset: true});
-    }
-});
-
-var FileInfoView = Backbone.View.extend({
-
-    reCreateLink: /(\d+)(d|m|h)/i,
-
-    events: {
-      "click #tab-tools": "switchTab",
-      "click #tab-versions": "switchTab",
-      "click #tab-about": "switchTab",
-      "click #create-share-link-button": "createShareLink",
-      "click #delete-shares-button": "deleteShares"
-    },
-
-    // versionsTemplate: $('#file-info-versions-template').html(),
-    // usageTemplate: _.template($('#file-info-usage-template').html()),
-    template: _.template($('#file-base-template').html()),
-
-    initialize: function() {
-      _.bindAll(this, 'render', 'renderVersionsTab');
-      _.bindAll(this, 'renderAboutTab', 'toggleDeleteButton');
-
-      this.links = this.model.links();
-
-      this.on("toggle-delete", this.toggleDeleteButton);
-    },
-
-    hide: function() {
-      this.$el.hide();
-    },
-
-    show: function() {
-      this.$el.show();
-    },
-
-    render: function() {
-      this.$el.html(this.template(this.model.toJSON()));
-
-      this.renderAboutTab();
-      this.renderVersionsTab();
-      this.renderUsageTab();
-
-      return this;
-    },
-
-    renderAboutTab: function() {
-      var aboutTab = new fileInfoAboutTabView({
-        model: this.model,
-        collection: this.links,
-        parent: this
-      });
-      this.$el.find("#tab-about-pane").html(aboutTab.render().el);
-    },
-
-    renderVersionsTab: function() {
-      // var versionsTab  = new fileVersionsTabView({collection: this.model});
-      // this.$el.find("#tab-versions-pane").append(versionsTab.render().el);
-    },
-
-    renderToolsTab: function() {
-
-    },
-
-    renderUsageTab: function() {
-      // this.$el.find("#tab-usage-pane").html(this.usageTemplate(this.model.toJSON()));
-    },
-
-    switchTab: function(e) {
-      var id = $(e.currentTarget).attr("id");
-
-      switch (id) {
-          case "tab-versions":
-            this.model.versions().fetch();
-            break;
-      }
-    },
-
-    createShareLink: function() {
-      var input = this.$el.find("#create-share-link-input").val();
-
-      if (this.reCreateLink.test(input)) {
-        var matches = input.match(this.reCreateLink);
-        var count = matches[1];
-        var discriminator = matches[2];
-        var now = new Date().getTime()/1000;
-
-        switch (discriminator) {
-          case "d":
-            var delta = count*86400;
-            break;
-          case "m":
-            var delta = count*60;
-            break;
-          case "h":
-            var delta = count*3600;
-            break;
-        }
-        var expiresIn = new Date((now + delta)*1000).getTime()/1000;
-        var target = this.model.id;
-        this.links.create({
-          "target": target,
-          "expires_in": expiresIn
-        }, {wait: true});
-      }
-    },
-
-    toggleDeleteButton: function(enableButton) {
-      if (enableButton) {
-        this.$el.find("#delete-shares-button").removeClass("disabled");
         // this.collection.fetch({prefix: links.join("/")+"/", reset: true});
         this.parent.navigate(links.join("/")+"/");
       } else {
         // this.collection.fetch({prefix: "", reset: true});
         this.parent.navigate("/");
       }
-    },
 
-    deleteShares: function() {
-      var selected = this.$('.el-icon-check input');
-
-      _.each(selected, function(elem) {
-        var model = this.links.get(this.$(elem).data("id"));
-
-        var target = this.model.id;
-        model.destroy({"target": target, wait: true});
-        // this.links.remove(model);
-      }, this);
-
-      this.links.fetch();
     }
 });
-
-var fileInfoAboutTabView = FileInfoView.extend({
-
-    reCreateLink: /(\d+)(d|m|h)/i,
-
-    events: {
-      "change .file-share-select input": "toggleDeleteButton",
-    },
-
-    template: _.template($('#file-info-about-template').html()),
-
-    initialize: function(options) {
-      _.bindAll(this, 'render', 'deleteShares');
-      _.bindAll(this, 'addShareLink', 'removeShareLink');
-      _.bindAll(this, 'renderShareLinksCount');
-
-      this.collection.bind('add', this.addShareLink);
-      this.collection.bind('remove', this.removeShareLink);
-      this.collection.bind('sync', this.renderShareLinksCount);
-
-      this.parent = options.parent;
-    },
-
-    render: function() {
-      // $('#tab-about-pane').html(this.template(this.model.toJSON()))
-      this.$el.html(this.template(this.model.toJSON()));
-      // this.links = this.model.links();
-      var self = this;
-
-      var ownerView = new UserInlineView({
-        "target": this.$el.find("#file-owner"),
-        "userId": this.model.get("owner")
-      });
-
-      return this;
-    },
-
-    renderShareLinks: function() {
-
-    },
-
-    addShareLink: function(link) {
-      var view = new FileLinkView({model: link});
-      this.$el.find("#file-share-links").append(view.render().el);
-      this.$el.find("#file-links-count").html(this.collection.length);
-    },
-
-    removeShareLink: function() {
-      this.$el.find("#file-links-count").html(this.collection.length);
-    },
-
-    renderShareLinksCount: function() {
-      this.$el.find("#file-links-count").html(this.collection.length);
-      this.toggleDeleteButton();
-    },
-
-    toggleDeleteButton : function() {
-      if (this.$el.find('.el-icon-check').length > 0) {
-        this.parent.trigger('toggle-delete', true);
-        // this.$el.find("#delete-shares-button").removeClass("disabled");
-      } else {
-        this.parent.trigger('toggle-delete', false);
-        // this.constructor.trigger('toggle-delete', false);
-        // this.$el.find("#delete-shares-button").addClass("disabled");
-      }
-    }
-
-});
-
-var FileLinkView = Backbone.View.extend({
-
-    tagName: "li",
-
-    events: {
-      "click .file-share-select": "toggleFileSelectCheckBox",
-      "click .file-share-link-help a": "showLinkView"
-    },
-
-    template: _.template($('#file-share-link-template').html()),
-
-    initialize: function(options) {
-      _.bindAll(this, 'render', 'toggleFileSelectCheckBox', 'remove');
-      this.listenTo(this.model, 'destroy', this.remove);
-    },
-
-    render: function() {
-      this.$el.html(this.template(this.model.toJSON()));
-
-      return this;
-    },
-
-    showLinkView: function() {
-      app.router.navigate("link/"+this.model.get("id"), {"trigger": true});
-
-      return false;
-    },
-
-    remove: function() {
-      this.$el.remove();
-    },
-
-    toggleFileSelectCheckBox: function() {
-      var isChecked = this.$el.find('.file-share-select input')[0].checked;
-
-      if (!isChecked) {
-        this.$el.find(".file-share-select").addClass("el-icon-check").removeClass("el-icon-check-empty");
-      } else {
-        this.$el.find(".file-share-select").addClass("el-icon-check-empty").removeClass("el-icon-check");
-      }
-
-      this.$el.find('.file-share-select input').prop('checked', !(isChecked)).change();
-    }
-
-});
-
 
