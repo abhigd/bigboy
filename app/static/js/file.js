@@ -144,13 +144,15 @@ var fileView = Backbone.View.extend({
     },
 
     showFile: function(e) {
+      e.preventDefault();
+
       if (this.model.get("type") == "folder") {
         this.parent.trigger("navigate", this.model.get("id"), true);
       }
       else {
-       this.parent.trigger("navigate", this.model.get("id"), false);
+       this.parent.trigger("view", this.model.get("id"), false);
       }
-      e.preventDefault();
+
       return false;
     },
 
@@ -302,8 +304,9 @@ var providerView = baseBucketView.extend({
 
       this.on("selectAll", this.toggleSelectAll);
       this.on("navigate", this.navigate);
-      this.collection.fetch({prefix: this.prefix});
+      this.on("view", this.view);
 
+      this.collection.fetch({prefix: this.prefix});
     },
 
     render: function() {
@@ -333,6 +336,7 @@ var providerView = baseBucketView.extend({
     sync: function() {
       this.fileSelected();
       app.fileApp.trigger("toggle-selectAll", false);
+      this.currentFolder = this.collection.currentPrefix;
     },
 
     previous: function() {
@@ -390,7 +394,16 @@ var providerView = baseBucketView.extend({
         path = "/" + path;
       }
 
-      app.router.navigate("bucket/" + this.bucket_name + path, {trigger: true});
+      app.router.navigate("bucket/" + this.bucket + path, {trigger: true});
+    },
+
+    view: function(path, isPrefix) {
+      var key = this.collection.get(path);
+      key.fetch();
+
+      app.router.navigate("bucket/" + this.bucket + path);
+    },
+
     }
 });
 
