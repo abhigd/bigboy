@@ -11,17 +11,17 @@
 var BucketKey = Backbone.Model.extend({
 
     sync: function(method, model, options) {
+        var s3 = this.collection.s3;
+        var _model = this;
+
         switch (method) {
             case "update":
-                console.log("Update");
-                console.log(model);
                 var params = {
                     StorageClass : model.get("StorageClass"),
                     Bucket: this.collection.bucket,
                     Key: this.id
                 };
 
-                var _model = this;
                 s3.putObject(params, function(err, data) {
                   if (err) console.log(err, err.stack); // an error occurred
                   else {
@@ -31,15 +31,16 @@ var BucketKey = Backbone.Model.extend({
                 });
                 break;
             case "read":
-                console.log("Read");
                 var params = {
-                  Bucket: 'STRING_VALUE', // required
-                  Key: 'STRING_VALUE', // required
+                    Bucket: this.collection.bucket,
+                    Key: this.id
                 };
-                s3.getObject(params, function(err, data) {
+
+                s3.headObject(params, function(err, data) {
                   if (err) console.log(err, err.stack); // an error occurred
                   else {
-                    this.set(data.Contents);
+                    // console.log(this);
+                    _model.set(data);
                   }
                 });
                 break;

@@ -178,7 +178,7 @@ var fileView = Backbone.View.extend({
 
 });
 
-var uploaderView = baseBucketView.extend({
+var UploaderView = baseBucketView.extend({
 
     collection: uploads,
 
@@ -283,9 +283,9 @@ var providerView = baseBucketView.extend({
     initialize: function(options) {
       _.bindAll(this, 'sync', 'addOne', 'deleteFiles');
       _.bindAll(this, 'previous', 'next', 'fileSelected', 'render');
-      _.bindAll(this, 'toggleSelectAll', 'navigate');
+      _.bindAll(this, 'toggleSelectAll', 'navigate', 'view');
 
-      this.bucket_name = options.bucket;
+      this.bucket = options.bucket;
       var path = options.keyOrPrefix || "";
 
       if (path.endsWith("/")) {
@@ -297,7 +297,7 @@ var providerView = baseBucketView.extend({
 
       var s3 = this.getS3();
       this.collection = new BucketKeys([], {
-        bucket: this.bucket_name,
+        bucket: this.bucket,
         s3: s3
       });
 
@@ -351,14 +351,6 @@ var providerView = baseBucketView.extend({
       this.collection.fetchNextPage();
 
       return false;
-    },
-
-    hide: function() {
-      this.$el.hide();
-    },
-
-    show: function() {
-      this.$el.show();
     },
 
     fileSelected : function() {
@@ -431,7 +423,6 @@ var FileBreadCrumbView = Backbone.View.extend({
       this.prefix = options.prefix;
 
       _.bindAll(this, 'jumpToFolder', 'render');
-      // this.listenTo(this.collection, 'reset', this.render);
     },
 
     render: function() {
@@ -453,10 +444,8 @@ var FileBreadCrumbView = Backbone.View.extend({
         _.each(crumbs, function(x) {
           links.unshift($(x).find("a").attr("id"));
         });
-        // this.collection.fetch({prefix: links.join("/")+"/", reset: true});
         this.parent.navigate(links.join("/")+"/");
       } else {
-        // this.collection.fetch({prefix: "", reset: true});
         this.parent.navigate("/");
       }
 

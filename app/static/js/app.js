@@ -20,6 +20,8 @@ var FileAppView = Backbone.View.extend({
 
       this.on("file-selected", this.fileSelected);
       this.on("toggle-selectAll", this.toggleSelectAllOption);
+
+      this.uploaderView = new UploaderView();
     },
 
     render: function() {
@@ -37,7 +39,7 @@ var FileAppView = Backbone.View.extend({
     },
 
     showFilePicker: function() {
-      this.uploaderView.showFilePicker();
+      this.uploaderView.showFilePicker(this.providerView);
     },
 
     previous: function() {
