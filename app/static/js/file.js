@@ -248,15 +248,17 @@ var uploaderView = baseBucketView.extend({
       this.$el.hide();
     },
 
-    showFilePicker: function(e) {
-      var bucket_name = "meer-sg-1";
+    showFilePicker: function(provider) {
+      var bucket = provider.getCurrentBucket();
+      var prefix = provider.getCurrentFolder();
       var uploader = new uploadView({
         collection: uploads,
         parent: this,
         s3: this.getS3(),
-        bucket: bucket_name,
-        prefix: ""
+        bucket: bucket,
+        prefix: prefix
       });
+
       this.uploaders.push(uploader);
       uploader.render();
       uploader.showFilePicker();
@@ -404,6 +406,12 @@ var providerView = baseBucketView.extend({
       app.router.navigate("bucket/" + this.bucket + path);
     },
 
+    getCurrentFolder: function() {
+      return this.currentFolder;
+    },
+
+    getCurrentBucket: function() {
+      return this.bucket;
     }
 });
 
