@@ -107,6 +107,7 @@ var BucketKeys = Backbone.Collection.extend({
                     }
                     _collection.setKeys(data.Contents);
                     _collection.setPrefixes(data.CommonPrefixes);
+                    _collection.trigger('sync');
                   }
                 });
         }
