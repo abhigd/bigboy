@@ -26,6 +26,7 @@ var uploadView = Backbone.View.extend({
     this.s3 = options.s3;
     this.bucket = options.bucket;
     this.prefix = options.prefix;
+    console.log(this.prefix);
   },
 
   render: function() {
@@ -168,6 +169,8 @@ var fileView = Backbone.View.extend({
       } else {
         this.$el.find(".file-select").addClass("el-icon-check-empty").removeClass("el-icon-check");
       }
+
+      this.model.set("isSelected", isChecked);
     },
 
     toggleFileSelectCheckBox: function() {
@@ -281,7 +284,7 @@ var providerView = baseBucketView.extend({
     currentFolder: "",
 
     initialize: function(options) {
-      _.bindAll(this, 'sync', 'addOne', 'deleteFiles');
+      _.bindAll(this, 'sync', 'addOne', 'deleteFiles', 'removeOne');
       _.bindAll(this, 'previous', 'next', 'fileSelected', 'render');
       _.bindAll(this, 'toggleSelectAll', 'navigate', 'view');
 
@@ -303,6 +306,7 @@ var providerView = baseBucketView.extend({
 
       this.collection.bind('sync', this.sync);
       this.collection.bind('add', this.addOne);
+      this.collection.bind('destroy', this.removeOne);
 
       this.on("selectAll", this.toggleSelectAll);
       this.on("navigate", this.navigate);
@@ -335,6 +339,10 @@ var providerView = baseBucketView.extend({
 
     },
 
+    removeOne: function(file) {
+      this.collection.remove(file);
+    },
+
     sync: function() {
       this.fileSelected();
       app.fileApp.trigger("toggle-selectAll", false);
@@ -349,6 +357,7 @@ var providerView = baseBucketView.extend({
 
     next: function() {
       this.collection.fetchNextPage();
+      var selectedFiles = this.collection.where({"StorageClass": "STANDARD"});
 
       return false;
     },
@@ -363,17 +372,13 @@ var providerView = baseBucketView.extend({
     },
 
     deleteFiles: function() {
-      var selectedFiles = this.$('.el-icon-check input');
+      var keys = _.filter(this.collection.models, function(model) {
+        return model.get("isSelected") === true;
+      });
 
-      _.each(selectedFiles, function(elem) {
-          var id = this.$(elem).data("id");
-          var f = files.get(id);
-          f.destroy({wait: true});
-          files.remove(f);
-          app.fileApp.trigger("toggle-selectAll", false);
-      }, this);
-
-      files.fetch();
+      _.each(keys, function(key) {
+        key.destroy({wait: true});
+      });
     },
 
     shareFiles: function() {

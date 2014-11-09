@@ -1,14 +1,8 @@
-// var Bucket = Backbone.Model.extend({
-//     idAttribute: "Key"
-// });
-
-// var Buckets = Backbone.Collection.extend({
-
-//     model: Bucket,
-//     url: "/api/bucket/"
-// });
-
 var BucketKey = Backbone.Model.extend({
+
+    defaults: {
+      "isSelected": false
+    },
 
     sync: function(method, model, options) {
         var s3 = this.collection.s3;
@@ -43,6 +37,68 @@ var BucketKey = Backbone.Model.extend({
                     _model.set(data);
                   }
                 });
+                break;
+            case "delete":
+                if (_model.get("type") == "folder") {
+                    // Get the keys under this prefix and delete them
+                    var params = {
+                      Bucket: this.collection.bucket,
+                      Prefix: model.id
+                    };
+                    // Add keys as models to this collection if there are
+                    // more records and if marker was specified other wise,
+                    // reset the collection.
+                    var complete = function() {
+                        _model.collection.remove(_model);
+                    };
+
+                    s3.listObjects(params, function(err, data) {
+                      if (err) console.log(err, err.stack); // an error occurred
+                      else {
+                        console.log(data);
+                        var keys = _.map(data.Contents, function(v, k ,l){
+                            var deleteObject = {
+                                Key: v.Key,
+                                VersionId: v.VersionId
+                            };
+                            return deleteObject;
+                        });
+                        // _.each(data.Contents, function(key) {
+                        //     var k = key.Key;
+
+                        // });
+                        var params = {
+                            Bucket: _model.collection.bucket,
+                            Delete: {
+                                Objects: keys
+                            }
+                        };
+
+                        s3.deleteObjects(params, function(err, data) {
+                          if (err) console.log(err, err.stack); // an error occurred
+                          else {
+                            console.log(data);
+                            _model.collection.remove(_model);
+                          }
+                        });
+
+                      }
+                    });
+
+                } else {
+                    var params = {
+                        Bucket: this.collection.bucket,
+                        Key: this.id
+                    };
+
+                    s3.deleteObject(params, function(err, data) {
+                      if (err) console.log(err, err.stack); // an error occurred
+                      else {
+                        console.log(this);
+                        _model.collection.remove(_model);
+                      }
+                    });
+                }
                 break;
         }
     }
@@ -110,6 +166,21 @@ var BucketKeys = Backbone.Collection.extend({
                     _collection.trigger('sync');
                   }
                 });
+                break;
+            case "delete":
+                var params = {
+                    Bucket: this.bucket,
+                    Key: this.model.id
+                };
+
+                s3.deleteObject(params, function(err, data) {
+                  if (err) console.log(err, err.stack); // an error occurred
+                  else {
+                    console.log(this);
+                    // _model.set(data);
+                  }
+                });
+                break;
         }
     },
 

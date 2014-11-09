@@ -112,6 +112,10 @@ var FileAppView = Backbone.View.extend({
       if (this.fileInfoView) {
         this.fileInfoView.close();
       }
+    },
+
+    deleteFiles: function(e) {
+      this.providerView.deleteFiles();
     }
 });
 
