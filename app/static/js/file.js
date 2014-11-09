@@ -400,7 +400,7 @@ var providerView = baseBucketView.extend({
       var key = this.collection.get(path);
       key.fetch();
 
-      app.router.navigate("bucket/" + this.bucket + path);
+      app.router.navigate("bucket/" + this.bucket + "/" + path);
     },
 
     getCurrentFolder: function() {
