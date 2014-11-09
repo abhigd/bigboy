@@ -111,7 +111,7 @@
 
         var params = {
           Bucket: this.options.bucket,
-          Key: file.name,
+          Key: this.options.prefix + file.name,
           ContentType: file.type,
           ServerSideEncryption: 'AES256',
           StorageClass: 'REDUCED_REDUNDANCY'
@@ -292,6 +292,7 @@
     defaults: {
       message: 'Hello world!',
       urlPath: "/files/upload/",
+      prefix: "",
       onComplete : function() {},
       onProgress: function() {},
       onFileComplete: function() {},
