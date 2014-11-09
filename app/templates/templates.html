@@ -21,7 +21,9 @@
           </div>
         </div>
     </div>
-    <div id="uploaderView"></div>
+    <div id="uploaderView">
+      <div id="uploadListView"></div>
+    </div>
     <div id="providerView">
       <div id="providerListView"></div>
       <div id="providerHelperView"></div>
@@ -83,7 +85,9 @@
     </div>
 
     <div class="col-xs-11 col-sm-9 col-md-9 file-title">
-      <a hrefs="/files/<%= id %>" class="file-link"><%=title %></a>
+      <a href="/bucket/<%= bucket %>/<%= id %>" class="file-link">
+        <%=title %>
+      </a>
     </div>
 
     <div class="hidden-xs col-sm-2 col-md-2 file-meta">
