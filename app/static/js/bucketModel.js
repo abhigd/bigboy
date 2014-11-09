@@ -4,6 +4,35 @@ var BucketKey = Backbone.Model.extend({
       "isSelected": false
     },
 
+    getNextSet: function(s3, params, context) {
+        var moreExists = true;
+        var nextMarker = "";
+
+        this.next = function(func, complete) {
+            if (moreExists) {
+                params["Marker"] = nextMarker;
+                s3.listObjects(params, function(err, data) {
+                  if (err) console.log(err, err.stack); // an error occurred
+                  else {
+                    console.log(data);
+                    var keys = _.map(data.Contents, function(v, k ,l){
+                        var deleteObject = {
+                            Key: v.Key,
+                            VersionId: v.VersionId
+                        };
+                        return deleteObject;
+                    });
+                    moreExists = data.IsTruncated;
+                    nextMarker = _.last(keys)["Key"];
+                    func.call(context, keys);
+                  }
+                });
+            } else {
+                complete.call(context);
+            }
+        };
+    },
+
     sync: function(method, model, options) {
         var s3 = this.collection.s3;
         var _model = this;
@@ -33,7 +62,6 @@ var BucketKey = Backbone.Model.extend({
                 s3.headObject(params, function(err, data) {
                   if (err) console.log(err, err.stack); // an error occurred
                   else {
-                    // console.log(this);
                     _model.set(data);
                   }
                 });
@@ -49,26 +77,14 @@ var BucketKey = Backbone.Model.extend({
                     // more records and if marker was specified other wise,
                     // reset the collection.
                     var complete = function() {
-                        _model.collection.remove(_model);
+                        this.collection.remove(_model);
                     };
 
-                    s3.listObjects(params, function(err, data) {
-                      if (err) console.log(err, err.stack); // an error occurred
-                      else {
-                        console.log(data);
-                        var keys = _.map(data.Contents, function(v, k ,l){
-                            var deleteObject = {
-                                Key: v.Key,
-                                VersionId: v.VersionId
-                            };
-                            return deleteObject;
-                        });
-                        // _.each(data.Contents, function(key) {
-                        //     var k = key.Key;
-
-                        // });
+                    var keysIter = new this.getNextSet(s3, params, _model);
+                    var deleteKeys = function(keys) {
+                        var self = this;
                         var params = {
-                            Bucket: _model.collection.bucket,
+                            Bucket: this.collection.bucket,
                             Delete: {
                                 Objects: keys
                             }
@@ -77,14 +93,11 @@ var BucketKey = Backbone.Model.extend({
                         s3.deleteObjects(params, function(err, data) {
                           if (err) console.log(err, err.stack); // an error occurred
                           else {
-                            console.log(data);
-                            _model.collection.remove(_model);
+                            keysIter.next(deleteKeys, complete, self);
                           }
                         });
-
-                      }
-                    });
-
+                    };
+                    keysIter.next(deleteKeys, complete, _model);
                 } else {
                     var params = {
                         Bucket: this.collection.bucket,
@@ -94,7 +107,6 @@ var BucketKey = Backbone.Model.extend({
                     s3.deleteObject(params, function(err, data) {
                       if (err) console.log(err, err.stack); // an error occurred
                       else {
-                        console.log(this);
                         _model.collection.remove(_model);
                       }
                     });
