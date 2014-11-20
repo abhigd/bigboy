@@ -10,15 +10,8 @@
 </script>
 
 <script type="text/template" id="files-base-template">
-    <div id="actionbar" class="navbar navbar-default">
-        <div class="container-fluid">
-          <ul id="actionbar-breadcrumb" class="navbar-left" style="margin: 0; padding: 0;"></ul>
-          <div class="btn-group navbar-right">
-            <button id="upload-btn" class="upload-btn navbar-btn btn btn-info">
-                <i class="el-icon-upload"></i>
-                <span>Upload</span>
-            </button>
-          </div>
+    <div class="row no-gutters">
+        <div id="breadcrumb-wrapper" class="col-xs-12 col-md-12">
         </div>
     </div>
     <div id="uploaderView">
@@ -109,9 +102,15 @@
 </script>
 
 <script type="text/template" id="file-bread-template">
-  <ol class="breadcrumb" style="margin: 8px 0">
+  <div class="navbar-header">
+    <button aria-controls="navbar" aria-expanded="false" data-target="#breadcrumb" data-toggle="collapse" class="navbar-toggle collapsed" type="button">
+      <span><%= folder %></span>
+      <span class="caret"></span>
+    </button>
+  </div>
+  <ul id="breadcrumb" class="nav navbar-nav navbar-collapse collapse">
     <li class="home"><a id="/" href="#">#</a></li>
-  </ol>
+  </ul>
 </script>
 
 <script type="text/template" id="file-bread-link-template">
