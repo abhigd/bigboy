@@ -45,3 +45,5 @@ vendor/
 bower_components/
 
 app/static/js/aws-sdk.js
+
+app/static/css/index.css
