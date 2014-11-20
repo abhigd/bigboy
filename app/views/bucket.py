@@ -27,9 +27,12 @@ from flask.ext.login import login_user, current_user
 from flask.ext.login import login_required, login_url
 
 @app.route('/')
+@app.route('/bucket/<bucket>/')
+@app.route('/bucket/<bucket>/<key>')
+@app.route('/bucket/<bucket>/<path:path>')
 # @app.route('/file/', methods=['GET'])
 @login_required
-def render_bucket():
+def render_bucket(bucket="", key="", path=""):
     region_setting = ""
     region = connect_to_region(region_setting)
     sts_connection = STSConnection(
