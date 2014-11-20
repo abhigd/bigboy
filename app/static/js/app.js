@@ -95,10 +95,14 @@ var FileAppView = Backbone.View.extend({
     fileSelected: function(value) {
       if (value) {
         this.$el.find("#delete-btn").addClass("disabled");
-        this.$el.find("#share-btn").addClass("disabled");
+        this.$el.find("#edit-btn").addClass("disabled");
+        this.$el.find("#copy-btn").addClass("disabled");
+        this.$el.find("#move-btn").addClass("disabled");
       } else {
         this.$el.find("#delete-btn").removeClass("disabled");
-        this.$el.find("#share-btn").removeClass("disabled");
+        this.$el.find("#edit-btn").removeClass("disabled");
+        this.$el.find("#copy-btn").removeClass("disabled");
+        this.$el.find("#move-btn").removeClass("disabled");
       }
     },
 

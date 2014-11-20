@@ -28,40 +28,45 @@
       <div id="providerListView"></div>
       <div id="providerHelperView"></div>
     </div>
-    <div id="navigationbar" class="navbar navbar-default">
-        <div class="col-xs-7 col-md-9">
+    <div id="navigationbar" class="navbar navbar-fixed-bottom">
+        <div class="col-xs-12 col-sm-6 col-sm-offset-4 col-md-4 col-md-offset-2">
+
           <div class="btn-group">
-            <button id="select-toggle" class="btn navbar-btn" href="#">
+            <button id="select-toggle" class="btn navbar-btn">
                 <i class="el-icon-check-empty file-select">
                     <input type="checkbox" style="display: none">
                 </i>
             </button>
-            <button id="delete-btn" class="btn navbar-btn disabled">
+            <button id="edit-btn" class="btn navbar-btn disabled"
+              title="Edit selected files and folders">
+                <i class="el-icon-pencil"></i>
+            </button>
+          </div>
+
+          <div class="btn-group">
+            <button id="copy-btn" class="btn navbar-btn disabled"
+              title="Copy selected files and folders">
+                <i class="el-icon-fork"></i>
+            </button>
+            <button id="move-btn" class="btn navbar-btn disabled"
+              title="Move selected files and folders">
+                <i class="el-icon-fullscreen"></i>
+            </button>
+            <button id="paste-btn" class="btn navbar-btn disabled"
+              title="Paste here">
+                <i class="el-icon-return-key"></i>
+            </button>
+          </div>
+
+          <div class="btn-group">
+            <button id="delete-btn" class="btn navbar-btn disabled"
+              title="delete selected files and folders">
                 <i class="el-icon-trash"></i>
-                <span style="display: none">Delete</span>
-            </button>
-            <button id="share-btn" class="btn navbar-btn disabled">
-                <i class="el-icon-share-alt"></i>
-                <span class="hidden-xs">Share</span>
             </button>
           </div>
-        </div>
-        <div class="col-xs-5 col-md-3">
-          <div class="" style="text-align: right">
-            <div class="btn-group">
-              <button id="prev" type="button" class="btn navbar-btn btn-info">
-              <i class="el-icon-chevron-left"></i>
-              <span class="hidden-xs">Previous</span>
-              </button>
-              <button id="next" type="button" class="btn navbar-btn btn-info">
-              <span class="hidden-xs">Next</span>
-              <i class="el-icon-chevron-right"></i>
-              </button>
-            </div>
-          </div>
+
         </div>
     </div>
-
 </script>
 
 <script type="text/template" id="upload-file-template">
