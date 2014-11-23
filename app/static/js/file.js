@@ -116,9 +116,6 @@ var fileView = Backbone.View.extend({
       return this;
     },
 
-    renderFileMeta: function() {
-    },
-
     renderProgress: function(file) {
       var progress = file.get('progress');
 
@@ -290,7 +287,7 @@ var providerView = baseBucketView.extend({
     initialize: function(options) {
       _.bindAll(this, 'sync', 'addOne', 'deleteFiles', 'removeOne');
       _.bindAll(this, 'previous', 'next', 'fileSelected', 'render');
-      _.bindAll(this, 'toggleSelectAll', 'navigate', 'view', 'reset');
+      _.bindAll(this, 'toggleSelectAll', 'navigate', 'view');
 
       this.parent = options.parent;
       var s3 = this.getS3();
@@ -387,9 +384,6 @@ var providerView = baseBucketView.extend({
       _.each(keys, function(key) {
         key.destroy({wait: true});
       });
-    },
-
-    shareFiles: function() {
     },
 
     toggleSelectAll: function(isChecked) {
