@@ -11,10 +11,11 @@ var FileAppView = Backbone.View.extend({
       "change #navigationbar #select-toggle input": "selectAllFiles"
     },
 
-    filesTemplate: _.template($('#files-base-template').html()),
+    template: _.template($('#app-template').html()),
 
-    initialize: function() {
-      _.bindAll(this, "render", "renderBucket", "showFile", "showFiles");
+    initialize: function(options) {
+      _.bindAll(this, "render", "refresh", "showFile", "showFiles");
+      _.bindAll(this, "fileSelected");
 
       this.on("toggle-selectAll", this.toggleSelectAllOption);
 
@@ -22,20 +23,23 @@ var FileAppView = Backbone.View.extend({
     },
 
     render: function() {
-      this.$el.find("#content").html(this.filesTemplate());
+      this.$el.find("#content").html(this.template());
+      this.providerView = new providerView({
+        parent: this
+      });
+      this.uploaderView = new UploaderView();
+      this.sidebarView = new SideBarView({
+      });
+
+      this.providerView.render();
+      this.sidebarView.render();
+
+      return this;
     },
 
-    renderBucket: function(bucket, keyOrPrefix) {
-      this.providerView = new providerView({
-        bucket: bucket,
-        keyOrPrefix: keyOrPrefix
-      });
-      this.providerView.render();
-
-      this.sidebarView = new SideBarView({
-        selectedBucket: bucket
-      });
-      this.sidebarView.render();
+    refresh: function(bucket, keyOrPrefix) {
+      this.providerView.refresh(bucket, keyOrPrefix);
+      this.sidebarView.refresh(bucket);
     },
 
     showFilePicker: function() {
@@ -116,23 +120,13 @@ var AppView = Backbone.View.extend({
 
     initialize: function() {
       this.fileApp = new FileAppView();
-      // this.linkApp = new LinkAppView();
-    },
-
-    render: function() {
       this.fileApp.render();
-      // this.linkApp.render();
     },
 
-    initFiles: function() {
-      // this.linkApp.$el.hide();
-      this.fileApp.$el.show();
-    },
-
-    initLinks: function() {
-      this.fileApp.$el.hide();
-      // this.linkApp.$el.show();
+    refresh: function(bucket, key) {
+      this.fileApp.refresh(bucket, key);
     }
+
 });
 
 var AppRouter = Backbone.Router.extend({
@@ -148,17 +142,13 @@ var AppRouter = Backbone.Router.extend({
   },
 
   renderBucket: function(bucket) {
-    console.log("renderBucket " + bucket);
-
-    app.initFiles();
-    app.fileApp.showFile(bucket);
+    console.log("renderRoot " + bucket);
   },
 
   renderBucketWithKey: function(bucket, key) {
     console.log("renderBucketWithKey " + bucket + " " + key);
 
-    app.initFiles();
-    app.fileApp.showFile(bucket, key);
+    app.refresh(bucket, key);
   }
 });
 

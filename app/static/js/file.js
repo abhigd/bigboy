@@ -281,17 +281,48 @@ var providerView = baseBucketView.extend({
       "change .file-select input": "fileSelected",
     },
 
-    el: "#providerListView",
+    el: "#fileAppViewWrapper",
+
+    template: _.template($('#files-provider-template').html()),
 
     currentFolder: "",
 
     initialize: function(options) {
       _.bindAll(this, 'sync', 'addOne', 'deleteFiles', 'removeOne');
       _.bindAll(this, 'previous', 'next', 'fileSelected', 'render');
-      _.bindAll(this, 'toggleSelectAll', 'navigate', 'view');
+      _.bindAll(this, 'toggleSelectAll', 'navigate', 'view', 'reset');
 
-      this.bucket = options.bucket;
-      var path = options.keyOrPrefix || "";
+      this.parent = options.parent;
+      var s3 = this.getS3();
+      this.collection = new BucketKeys([], {
+        s3: s3
+      });
+
+      this.metaView = new FileMetaView({
+        collection: this.collection,
+        parent: this
+      });
+
+      this.collection.on('sync', this.sync);
+      this.collection.bind('add', this.addOne);
+      this.collection.bind('destroy', this.removeOne);
+
+      this.on("selectAll", this.toggleSelectAll);
+      this.on("navigate", this.navigate);
+      this.on("view", this.view);
+    },
+
+    },
+
+    render: function() {
+      this.$el.html(this.template());
+
+      return this;
+    },
+
+    refresh: function(bucket, key) {
+      this.bucket = bucket;
+      var path = key || "";
 
       if (path.endsWith("/")) {
         this.prefix = path;
@@ -300,31 +331,8 @@ var providerView = baseBucketView.extend({
         this.prefix = path.slice(0, path.lastIndexOf("/")+1);
       }
 
-      var s3 = this.getS3();
-      this.collection = new BucketKeys([], {
-        bucket: this.bucket,
-        s3: s3
-      });
-
-      this.metaView = new FileMetaView({
-        collection: this.collection,
-        parent: this
-      });
-      // metaView.render();
-
-      this.collection.bind('sync', this.sync);
-      this.collection.bind('add', this.addOne);
-      this.collection.bind('destroy', this.removeOne);
-
-      this.on("selectAll", this.toggleSelectAll);
-      this.on("navigate", this.navigate);
-      this.on("view", this.view);
-
+      this.collection.bucket = bucket;
       this.collection.fetch({prefix: this.prefix});
-    },
-
-    render: function() {
-      this.$el.addClass('file-list container-fluid');
 
       var breadView = new FileBreadCrumbView({
         prefix: this.prefix,
@@ -332,7 +340,6 @@ var providerView = baseBucketView.extend({
       });
       breadView.render();
 
-      return this;
     },
 
     addOne: function(file) {
@@ -340,9 +347,9 @@ var providerView = baseBucketView.extend({
       var idx = this.collection.indexOf(file);
 
       if (idx === 0) {
-        this.$el.prepend(view.render().el);
+        this.$el.find("#providerListView").prepend(view.render().el);
       } else {
-        this.$el.append(view.render().el);
+        this.$el.find("#providerListView").append(view.render().el);
       }
 
     },
@@ -405,7 +412,7 @@ var providerView = baseBucketView.extend({
       if (path.substring(0, 1) != "/") {
         path = "/" + path;
       }
-
+      this.collection.reset();
       app.router.navigate("bucket/" + this.bucket + path, {trigger: true});
     },
 
@@ -507,14 +514,14 @@ var SideBarView = baseBucketView.extend({
 
   el: "#sidebar",
 
-  template: _.template($('#files-sidebar-bucket-template').html()),
-  sidebarTemplate: _.template($('#files-sidebar-template').html()),
+  bucketTemplate: _.template($('#files-sidebar-bucket-template').html()),
+  template: _.template($('#files-sidebar-template').html()),
 
   initialize: function(options) {
-    var s3 = this.getS3();
-
-    this.collection = new Buckets();
     _.bindAll(this, 'addOne', 'render', 'removeOne');
+
+    var s3 = this.getS3();
+    this.collection = new Buckets();
 
     this.collection.bind('sync', this.sync);
     this.collection.bind('add', this.addOne);
@@ -522,11 +529,10 @@ var SideBarView = baseBucketView.extend({
 
     this.collection.fetch();
 
-    this.selectedBucket = options.selectedBucket;
   },
 
   render: function() {
-    this.$el.html(this.sidebarTemplate({bucket: this.selectedBucket}));
+    this.$el.html(this.template());
 
     return this;
   },
@@ -538,6 +544,7 @@ var SideBarView = baseBucketView.extend({
   addOne: function(model) {
     // console.log(this);
     this.$el.find("#bucket-list").append(this.template(model.toJSON()));
+    this.$el.find("#bucket-list").append(this.bucketTemplate(model.toJSON()));
   },
 
   removeOne: function(model) {
