@@ -72,28 +72,6 @@ body {
   padding-left: 0;
 }
 
-#file-app {
-    .upload-snippet {
-        display: none;
-    }
-
-    .upload-snippet-alert {
-        display: none;
-        color: #C09853;
-        font-size: 120%;
-        line-height: 13px;
-        vertical-align: middle;
-    }
-
-    .upload-snippet-count {
-    }
-
-}
-
-#fileAppViewWrapper {
-    // padding: 20px 0;
-}
-
 #breadcrumb-wrapper .navbar-toggle {
     margin: 0px;
     padding: 10px 0px 0px;
@@ -124,32 +102,18 @@ body {
     padding: 10px;
 }
 
-#uploaderView {
-    background-color: rgba(250, 250, 250, 0.93);
-    border-left: 1px solid #D4D4D4;
-    border-right: 1px solid #D4D4D4;
+#providerView {
+    margin-left: -15px;
+    margin-right: -15px;
 }
 
-#file-info-wrapper {
-    // padding-bottom: 50px;
-    .tab-content {
-        background-color: rgba(250, 250, 250, 0.93);
+#providerView .file-list {
+    min-height: 30em;
+
+    li:nth-child(odd) {
+        background-color: rgba(217, 237, 247, 0.2);
     }
 
-    .nav.nav-tabs > li {
-        float: right;
-    }
-
-    .nav.nav-tabs > li a {
-        background-color: rgba(250, 250, 250, 0.93);
-    }
-
-    .nav.nav-tabs {
-        margin-bottom: 0px;
-    }
-}
-
-#file-app .upload-file-list, .file-list {
     list-style: none;
 
     > li {
@@ -165,7 +129,6 @@ body {
     }
 
     .file-selector {
-        // width: 5%;
         text-align: center;
         vertical-align: bottom;
     }
