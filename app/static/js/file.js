@@ -457,3 +457,44 @@ var FileBreadCrumbView = Backbone.View.extend({
     }
 });
 
+var SideBarView = baseBucketView.extend({
+
+  el: "#sidebar",
+
+  template: _.template($('#files-sidebar-bucket-template').html()),
+  sidebarTemplate: _.template($('#files-sidebar-template').html()),
+
+  initialize: function(options) {
+    var s3 = this.getS3();
+
+    this.collection = new Buckets();
+    _.bindAll(this, 'addOne', 'render', 'removeOne');
+
+    this.collection.bind('sync', this.sync);
+    this.collection.bind('add', this.addOne);
+    this.collection.bind('destroy', this.removeOne);
+
+    this.collection.fetch();
+
+    this.selectedBucket = options.selectedBucket;
+  },
+
+  render: function() {
+    this.$el.html(this.sidebarTemplate({bucket: this.selectedBucket}));
+
+    return this;
+  },
+
+  sync: function() {
+
+  },
+
+  addOne: function(model) {
+    // console.log(this);
+    this.$el.find("#bucket-list").append(this.template(model.toJSON()));
+  },
+
+  removeOne: function(model) {
+    // this.$el.find("a[href=/bucket]/"+model.id).parent().destroy();
+  }
+});
