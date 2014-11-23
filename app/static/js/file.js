@@ -371,11 +371,16 @@ var providerView = baseBucketView.extend({
     },
 
     fileSelected : function() {
-
       if (this.$('.el-icon-check').length > 0) {
-        app.fileApp.trigger("file-selected", false);
+        this.$el.find("#delete-btn").removeClass("disabled");
+        this.$el.find("#edit-btn").removeClass("disabled");
+        this.$el.find("#copy-btn").removeClass("disabled");
+        this.$el.find("#move-btn").removeClass("disabled");
       } else {
-        app.fileApp.trigger("file-selected", true);
+        this.$el.find("#delete-btn").addClass("disabled");
+        this.$el.find("#edit-btn").addClass("disabled");
+        this.$el.find("#copy-btn").addClass("disabled");
+        this.$el.find("#move-btn").addClass("disabled");
       }
     },
 

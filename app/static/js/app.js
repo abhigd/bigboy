@@ -4,7 +4,6 @@ var FileAppView = Backbone.View.extend({
 
     events: {
       "click #delete-btn": "deleteFiles",
-      "click #share-btn": "shareFiles",
       "click #upload-btn": "showFilePicker",
       "click #prev": "previous",
       "click #next": "next",
@@ -17,18 +16,16 @@ var FileAppView = Backbone.View.extend({
     initialize: function() {
       _.bindAll(this, "render", "renderBucket", "showFile", "showFiles");
 
-      this.on("file-selected", this.fileSelected);
       this.on("toggle-selectAll", this.toggleSelectAllOption);
 
       this.uploaderView = new UploaderView();
     },
 
     render: function() {
-      this.$el.html(this.template());
+      this.$el.find("#content").html(this.filesTemplate());
     },
 
     renderBucket: function(bucket, keyOrPrefix) {
-      this.$el.find("#fileAppViewWrapper").html(this.filesTemplate());
       this.providerView = new providerView({
         bucket: bucket,
         keyOrPrefix: keyOrPrefix
@@ -93,20 +90,6 @@ var FileAppView = Backbone.View.extend({
 
     selectAllFiles : function(e) {
       this.providerView.trigger("selectAll", e.currentTarget.checked);
-    },
-
-    fileSelected: function(value) {
-      if (value) {
-        this.$el.find("#delete-btn").addClass("disabled");
-        this.$el.find("#edit-btn").addClass("disabled");
-        this.$el.find("#copy-btn").addClass("disabled");
-        this.$el.find("#move-btn").addClass("disabled");
-      } else {
-        this.$el.find("#delete-btn").removeClass("disabled");
-        this.$el.find("#edit-btn").removeClass("disabled");
-        this.$el.find("#copy-btn").removeClass("disabled");
-        this.$el.find("#move-btn").removeClass("disabled");
-      }
     },
 
     onClose: function() {
