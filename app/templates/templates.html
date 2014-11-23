@@ -23,6 +23,8 @@
 </script>
 
 <script type="text/template" id="files-base-template">
+  <div class="hidden-xs" style="padding-top: 20px;"></div>
+  <div id="fileAppViewWrapper">
     <div class="row no-gutters">
         <div id="breadcrumb-wrapper" class="col-xs-12 col-md-12">
         </div>
@@ -30,9 +32,9 @@
     <div id="uploaderView">
       <div id="uploadListView"></div>
     </div>
-    <div id="providerView">
+    <div id="providerView" style="position: relative">
       <div id="providerListView"></div>
-      <div id="providerHelperView"></div>
+      <div id="providerHelperView" class="col-xs-12 col-sm-6 col-md-4 col-lg-4" style="height: 100%; position: absolute; top:0; right:0; "></div>
     </div>
     <div id="navigationbar" class="navbar navbar-fixed-bottom">
         <div class="col-xs-12 col-sm-6 col-sm-offset-4 col-md-4 col-md-offset-2">
@@ -73,6 +75,7 @@
 
         </div>
     </div>
+  </div>
 </script>
 
 <script type="text/template" id="upload-file-template">
@@ -95,7 +98,7 @@
         </i>
     </div>
 
-    <div class="col-xs-11 col-sm-9 col-md-9 file-title">
+    <div class="col-xs-10 col-sm-9 col-md-9 file-title">
       <a href="/bucket/<%= bucket %>/<%= id %>" class="file-link">
         <%=title %>
       </a>
@@ -106,6 +109,8 @@
     </div>
 </script>
 
+<script type="text/template" id="file-meta-template">
+  <div>Show some info <%=title %></div>
 </script>
 
 <script type="text/template" id="file-views-link">
