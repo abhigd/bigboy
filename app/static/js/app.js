@@ -1,6 +1,6 @@
 var FileAppView = Backbone.View.extend({
 
-    el: "#file-app",
+    el: "#app",
 
     events: {
       "click #delete-btn": "deleteFiles",
@@ -12,7 +12,6 @@ var FileAppView = Backbone.View.extend({
       "change #navigationbar #select-toggle input": "selectAllFiles"
     },
 
-    template: _.template($('#file-app-template').html()),
     filesTemplate: _.template($('#files-base-template').html()),
 
     initialize: function() {
@@ -34,8 +33,12 @@ var FileAppView = Backbone.View.extend({
         bucket: bucket,
         keyOrPrefix: keyOrPrefix
       });
+      this.providerView.render();
 
-      this.$el.find("#providerListView").html(this.providerView.render().el);
+      this.sidebarView = new SideBarView({
+        selectedBucket: bucket
+      });
+      this.sidebarView.render();
     },
 
     showFilePicker: function() {

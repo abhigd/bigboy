@@ -1,3 +1,30 @@
+var Bucket = Backbone.Model.extend({
+
+});
+
+var Buckets = Backbone.Collection.extend({
+    model: Bucket,
+
+    initialize: function(models, options) {
+    },
+
+    url: "/api/bucket/",
+
+    parse: function(response) {
+        var results = [];
+        _.each(response, function(info, name){
+            info["id"] = name;
+            results.push(info);
+        }, this);
+
+        return results;
+    }
+});
+
+var recentBuckets = Buckets.extend({
+
+});
+
 var BucketKey = Backbone.Model.extend({
 
     defaults: {
