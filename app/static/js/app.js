@@ -18,8 +18,7 @@ var FileAppView = Backbone.View.extend({
       _.bindAll(this, "fileSelected");
 
       this.on("toggle-selectAll", this.toggleSelectAllOption);
-
-      this.uploaderView = new UploaderView();
+      this.on("file-selected", this.fileSelected);
     },
 
     render: function() {
@@ -66,6 +65,20 @@ var FileAppView = Backbone.View.extend({
 
     showFiles: function(bucket) {
       this.renderBucket(bucket, "");
+    },
+
+    fileSelected : function() {
+      if (this.$('.el-icon-check').length > 0) {
+        this.$el.find("#delete-btn").removeClass("disabled");
+        this.$el.find("#edit-btn").removeClass("disabled");
+        this.$el.find("#copy-btn").removeClass("disabled");
+        this.$el.find("#move-btn").removeClass("disabled");
+      } else {
+        this.$el.find("#delete-btn").addClass("disabled");
+        this.$el.find("#edit-btn").addClass("disabled");
+        this.$el.find("#copy-btn").addClass("disabled");
+        this.$el.find("#move-btn").addClass("disabled");
+      }
     },
 
     renderSelectAllOptionState: function(e) {
