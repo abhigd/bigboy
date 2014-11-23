@@ -106,7 +106,7 @@ var fileView = Backbone.View.extend({
       this.listenTo(this.model, 'remove', this._remove);
       this.listenTo(this.model, 'change:progress', this.renderProgress);
       this.listenTo(this.model, 'change:uploadStatus', this.renderUploadStatus);
-      this.listenTo(this.model.collection, 'reset', this.remove);
+      this.listenTo(this.parent.collection, 'reset', this._remove);
     },
 
     render: function() {
