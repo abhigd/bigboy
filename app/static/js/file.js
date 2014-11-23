@@ -281,6 +281,8 @@ var providerView = baseBucketView.extend({
       "change .file-select input": "fileSelected",
     },
 
+    el: "#providerListView",
+
     currentFolder: "",
 
     initialize: function(options) {
@@ -303,6 +305,12 @@ var providerView = baseBucketView.extend({
         bucket: this.bucket,
         s3: s3
       });
+
+      this.metaView = new FileMetaView({
+        collection: this.collection,
+        parent: this
+      });
+      // metaView.render();
 
       this.collection.bind('sync', this.sync);
       this.collection.bind('add', this.addOne);
@@ -398,7 +406,7 @@ var providerView = baseBucketView.extend({
 
     view: function(path, isPrefix) {
       var key = this.collection.get(path);
-      key.fetch();
+      this.metaView.render(key);
 
       app.router.navigate("bucket/" + this.bucket + "/" + path);
     },
@@ -414,13 +422,13 @@ var providerView = baseBucketView.extend({
 
 var FileBreadCrumbView = Backbone.View.extend({
 
-    el: "#actionbar-breadcrumb",
+    el: "#breadcrumb-wrapper",
 
     template: _.template($('#file-bread-template').html()),
     linkTemplate: _.template($('#file-bread-link-template').html()),
 
     events: {
-      "click li a": "jumpToFolder",
+      "click li a": "jumpToFolder"
     },
 
     initialize: function(options) {
@@ -432,10 +440,12 @@ var FileBreadCrumbView = Backbone.View.extend({
 
     render: function() {
       var crumbs = this.prefix.split("/");
-      this.$el.html(this.template());
+      crumbs.pop();
+      var prefixLastSegment = _.last(crumbs);
+      this.$el.html(this.template({folder: prefixLastSegment}));
 
       _.each(crumbs, function(x) {
-        this.$el.find('.breadcrumb').append(this.linkTemplate({title: x}));
+        this.$el.find('#breadcrumb').append(this.linkTemplate({title: x}));
       }, this);
     },
 
@@ -455,6 +465,37 @@ var FileBreadCrumbView = Backbone.View.extend({
       }
 
     }
+});
+
+var FileMetaView = baseBucketView.extend({
+
+  el: "#providerHelperView",
+
+  template: _.template($('#file-meta-template').html()),
+
+  events: {
+
+  },
+
+  initialize: function(options) {
+
+  },
+
+  render: function(file) {
+    var self = this;
+    this.$el.html(self.template(file.toJSON()));
+
+    file.fetch({
+      "success": function(model) {
+        self.$el.html(self.template(model.toJSON()));
+      },
+      "error": function() {
+        self.$el.html(self.template(model.toJSON()));
+      }
+    });
+
+    return this;
+  }
 });
 
 var SideBarView = baseBucketView.extend({
