@@ -1,5 +1,14 @@
 var Bucket = Backbone.Model.extend({
+  getConnection: function(bucket) {
+    var region = bucket.get("region");
 
+    return new AWS.S3({
+          accessKeyId: root_creds["access_key"],
+          secretAccessKey: root_creds["secret_key"],
+          sessionToken: root_creds["session_token"],
+          region: region
+    });
+  }
 });
 
 var Buckets = Backbone.Collection.extend({
@@ -68,7 +77,7 @@ var BucketKey = Backbone.Model.extend({
             case "update":
                 var params = {
                     StorageClass : model.get("StorageClass"),
-                    Bucket: this.collection.bucket,
+                    Bucket: this.collection.bucket.id,
                     Key: this.id
                 };
 
@@ -82,7 +91,7 @@ var BucketKey = Backbone.Model.extend({
                 break;
             case "read":
                 var params = {
-                    Bucket: this.collection.bucket,
+                    Bucket: this.collection.bucket.id,
                     Key: this.id
                 };
 
@@ -97,7 +106,7 @@ var BucketKey = Backbone.Model.extend({
                 if (_model.get("type") == "folder") {
                     // Get the keys under this prefix and delete them
                     var params = {
-                      Bucket: this.collection.bucket,
+                      Bucket: this.collection.bucket.id,
                       Prefix: model.id
                     };
                     // Add keys as models to this collection if there are
@@ -111,7 +120,7 @@ var BucketKey = Backbone.Model.extend({
                     var deleteKeys = function(keys) {
                         var self = this;
                         var params = {
-                            Bucket: this.collection.bucket,
+                            Bucket: this.collection.bucket.id,
                             Delete: {
                                 Objects: keys
                             }
@@ -127,7 +136,7 @@ var BucketKey = Backbone.Model.extend({
                     keysIter.next(deleteKeys, complete, _model);
                 } else {
                     var params = {
-                        Bucket: this.collection.bucket,
+                        Bucket: this.collection.bucket.id,
                         Key: this.id
                     };
 
@@ -164,6 +173,15 @@ var BucketKeys = Backbone.Collection.extend({
 
     comparator: "title",
 
+    setBucket: function(bucket) {
+        if (this.bucket && this.bucket.id != bucket) {
+            console.log("Not same bucket");
+            this.reset();
+        }
+        this.bucket = bucket;
+        this.s3 = bucket.getConnection(bucket);
+    },
+
     sync: function(method, model, options) {
         var options = options || {};
 
@@ -182,7 +200,7 @@ var BucketKeys = Backbone.Collection.extend({
                 }
 
                 var params = {
-                  Bucket: this.bucket,
+                  Bucket: this.bucket.id,
                   MaxKeys: this.maxKeys,
                   Prefix: prefix,
                   Marker: marker,
@@ -208,7 +226,7 @@ var BucketKeys = Backbone.Collection.extend({
                 break;
             case "delete":
                 var params = {
-                    Bucket: this.bucket,
+                    Bucket: this.bucket.id,
                     Key: this.model.id
                 };
 
@@ -244,7 +262,7 @@ var BucketKeys = Backbone.Collection.extend({
 
             e["id"] =  e['Prefix'];
             e["type"] = "folder";
-            e["bucket"] = this.bucket;
+            e["bucket"] = this.bucket.id;
             this.add(e);
         }, this);
     },
@@ -256,7 +274,7 @@ var BucketKeys = Backbone.Collection.extend({
             var splitBy = this.currentPrefix === "" ? "/" : this.currentPrefix;
             e["title"] = e['Key'].split(splitBy).pop();
             e["type"] = "file";
-            e["bucket"] = this.bucket;
+            e["bucket"] = this.bucket.id;
             this.add(e);
         }, this);
     }

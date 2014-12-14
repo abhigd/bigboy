@@ -330,7 +330,7 @@ var providerView = baseBucketView.extend({
         this.prefix = path.slice(0, path.lastIndexOf("/")+1);
       }
 
-      this.collection.bucket = bucket;
+      this.collection.setBucket(bucket);
       this.collection.fetch({prefix: this.prefix});
 
       var breadView = new FileBreadCrumbView({
