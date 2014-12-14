@@ -290,10 +290,8 @@ var providerView = baseBucketView.extend({
       _.bindAll(this, 'toggleSelectAll', 'navigate', 'view');
 
       this.parent = options.parent;
-      var s3 = this.getS3();
-      this.collection = new BucketKeys([], {
-        s3: s3
-      });
+      this.buckets = options.buckets;
+      this.collection = new BucketKeys();
 
       this.metaView = new FileMetaView({
         collection: this.collection,
