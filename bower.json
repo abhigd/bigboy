@@ -23,6 +23,7 @@
     "bootstrap": "~3.1.1",
     "elusive-iconfont": "*",
     "crypto-js-evanvosberg": "~3.1.2",
-    "aws-sdk": "*"
+    "aws-sdk": "*",
+    "material-ui": "https://github.com/callemall/material-ui.git"
   }
 }
