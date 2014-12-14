@@ -17,56 +17,55 @@
 </script>
 
 <script type="text/template" id="files-provider-template">
-    <div class="row no-gutters">
-        <div id="breadcrumb-wrapper" class="col-xs-12 col-md-12">
-        </div>
-    </div>
-    <div id="uploaderView">
-      <div id="uploadListView"></div>
-    </div>
-    <div id="providerView" style="position: relative">
-      <div id="providerListView" class="file-list container-fluid"></div>
-      <div id="providerHelperView" class="col-xs-12 col-sm-6 col-md-4 col-lg-4" style="height: 100%; position: absolute; top:0; right:0; "></div>
-    </div>
-    <div id="navigationbar" class="navbar navbar-fixed-bottom">
-        <div class="col-xs-12 col-sm-6 col-sm-offset-4 col-md-4 col-md-offset-2">
+  <nav id="actionbar" class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button id="select-toggle" class="btn navbar-btn pull-left">
+            <i class="mdfi_toggle_check_box_outline_blank file-select">
+                <input type="checkbox" style="display: none">
+            </i>
+        </button>
 
-          <div class="btn-group">
-            <button id="select-toggle" class="btn navbar-btn">
-                <i class="el-icon-check-empty file-select">
-                    <input type="checkbox" style="display: none">
-                </i>
-            </button>
-            <button id="edit-btn" class="btn navbar-btn disabled"
-              title="Edit selected files and folders">
-                <i class="el-icon-pencil"></i>
-            </button>
-          </div>
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#actionbar-actions">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
 
-          <div class="btn-group">
-            <button id="copy-btn" class="btn navbar-btn disabled"
-              title="Copy selected files and folders">
-                <i class="el-icon-fork"></i>
-            </button>
-            <button id="move-btn" class="btn navbar-btn disabled"
-              title="Move selected files and folders">
-                <i class="el-icon-fullscreen"></i>
-            </button>
-            <button id="paste-btn" class="btn navbar-btn disabled"
-              title="Paste here">
-                <i class="el-icon-return-key"></i>
-            </button>
-          </div>
-
-          <div class="btn-group">
-            <button id="delete-btn" class="btn navbar-btn disabled"
-              title="delete selected files and folders">
-                <i class="el-icon-trash"></i>
-            </button>
-          </div>
-
-        </div>
-    </div>
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse" id="actionbar-actions">
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#">Edit</a></li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">More<span class="caret"></span></a>
+            <ul class="dropdown-menu" role="menu">
+              <li role="presentation"><a role="menuitem" tabindex="-1" href="#">
+                <i class="mdfi_content_content_copy"></i>Copy</a></li>
+              <li role="presentation"><a role="menuitem" tabindex="-1" href="#">
+                <i class="mdfi_content_content_cut"></i>Move</a></li>
+              <li role="presentation"><a role="menuitem" tabindex="-1" href="#">
+                <i class="mdfi_content_content_paste"></i>Paste</a></li>
+              <li role="presentation" class="dropdown-header alert-warning">Dangerous</li>
+              <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Make Public</a></li>
+              <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Delete</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+  </nav>
+  <div id="navigationbar" class="navbar navbar-default">
+    <div id="breadcrumb-wrapper"></div>
+  </div>
+  <div id="uploaderView">
+    <div id="uploadListView"></div>
+  </div>
+  <div id="providerView" style="position: relative">
+    <div id="providerListView" class="file-list container-fluid"></div>
+    <div id="providerHelperView" class="col-xs-12 col-sm-6 col-md-4 col-lg-4" style="height: 100%; position: absolute; top:0; right:0; "></div>
+  </div>
 </script>
 
 <script type="text/template" id="app-template">
