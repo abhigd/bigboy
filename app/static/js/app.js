@@ -14,6 +14,8 @@ var FileAppView = Backbone.View.extend({
     template: _.template($('#app-template').html()),
 
     initialize: function(options) {
+      this.buckets = new Buckets([bucket_details]);
+
       _.bindAll(this, "render", "refresh", "showFile", "showFiles");
       _.bindAll(this, "fileSelected");
 
@@ -22,12 +24,15 @@ var FileAppView = Backbone.View.extend({
     },
 
     render: function() {
+
       this.$el.find("#content").html(this.template());
       this.providerView = new providerView({
-        parent: this
+        parent: this,
+        buckets: this.buckets
       });
       this.uploaderView = new UploaderView();
       this.sidebarView = new SideBarView({
+        collection: this.buckets
       });
 
       this.providerView.render();

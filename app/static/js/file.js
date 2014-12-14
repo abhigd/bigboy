@@ -502,15 +502,11 @@ var SideBarView = baseBucketView.extend({
   initialize: function(options) {
     _.bindAll(this, 'addOne', 'render', 'removeOne');
 
-    var s3 = this.getS3();
-    this.collection = new Buckets();
-
     this.collection.bind('sync', this.sync);
     this.collection.bind('add', this.addOne);
     this.collection.bind('destroy', this.removeOne);
 
     this.collection.fetch();
-
   },
 
   render: function() {
