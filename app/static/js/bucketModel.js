@@ -161,8 +161,6 @@ var BucketKeys = Backbone.Collection.extend({
     initialize: function(models, options) {
         options = options || {};
 
-        this.bucket = options.bucket;
-        this.s3 = options.s3;
         this.maxKeys = options.maxKeys || 30;
         this.marker = "";
         this.delimiter = "/";
