@@ -319,8 +319,10 @@ var providerView = baseBucketView.extend({
       return this;
     },
 
-    refresh: function(bucket, key) {
-      this.bucket = bucket;
+    refresh: function(bucket_name, key) {
+      var bucket = this.buckets.get(bucket_name);
+
+      this.bucket = bucket_name;
       var path = key || "";
 
       if (path.endsWith("/")) {
@@ -534,6 +536,10 @@ var SideBarView = baseBucketView.extend({
 
   render: function() {
     this.$el.html(this.template());
+    _.each(this.collection.models, function(bucket){
+      var bucketItem = new SideBarItemView({model: bucket});
+      this.$el.find("#bucket-list").append(bucketItem.render().el);
+    }, this);
 
     return this;
   },
