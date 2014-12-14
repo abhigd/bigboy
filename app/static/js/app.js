@@ -164,6 +164,8 @@ var AppRouter = Backbone.Router.extend({
 
   renderBucket: function(bucket) {
     console.log("renderRoot " + bucket);
+
+    app.refresh(bucket);
   },
 
   renderBucketWithKey: function(bucket, key) {
