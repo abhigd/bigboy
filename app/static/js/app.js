@@ -73,38 +73,41 @@ var FileAppView = Backbone.View.extend({
     },
 
     fileSelected : function() {
-      if (this.$('.el-icon-check').length > 0) {
+      if (this.$('.mdfi_toggle_check_box').length > 0) {
         this.$el.find("#delete-btn").removeClass("disabled");
         this.$el.find("#edit-btn").removeClass("disabled");
         this.$el.find("#copy-btn").removeClass("disabled");
         this.$el.find("#move-btn").removeClass("disabled");
+        this.$el.find("#paste-btn").removeClass("disabled");
       } else {
         this.$el.find("#delete-btn").addClass("disabled");
         this.$el.find("#edit-btn").addClass("disabled");
         this.$el.find("#copy-btn").addClass("disabled");
         this.$el.find("#move-btn").addClass("disabled");
+        this.$el.find("#paste-btn").addClass("disabled");
       }
     },
 
     renderSelectAllOptionState: function(e) {
       var isChecked = this.$el.find('#navigationbar #select-toggle input')[0].checked;
 
-      if (!isChecked) {
-        this.$el.find("#navigationbar #select-toggle .file-select").addClass("el-icon-check").removeClass("el-icon-check-empty");
-      } else {
-        this.$el.find("#navigationbar #select-toggle .file-select").addClass("el-icon-check-empty").removeClass("el-icon-check");
-      }
+      this.toggleSelectAllOption(!isChecked);
+      // if (!isChecked) {
+      //   this.$el.find("#navigationbar #select-toggle .file-select").addClass("el-icon-check").removeClass("el-icon-check-empty");
+      // } else {
+      //   this.$el.find("#navigationbar #select-toggle .file-select").addClass("el-icon-check-empty").removeClass("el-icon-check");
+      // }
 
-      this.$el.find('#navigationbar #select-toggle input').prop('checked', !(isChecked)).change();
+      // this.$el.find('#navigationbar #select-toggle input').prop('checked', !(isChecked)).change();
 
       e.preventDefault();
     },
 
     toggleSelectAllOption: function(state) {
       if (state) {
-        this.$el.find("#navigationbar #select-toggle .file-select").addClass("el-icon-check").removeClass("el-icon-check-empty");
+        this.$el.find("#navigationbar #select-toggle .file-select").addClass("mdfi_toggle_check_box").removeClass("mdfi_toggle_check_box_outline_blank");
       } else {
-        this.$el.find("#navigationbar #select-toggle .file-select").addClass("el-icon-check-empty").removeClass("el-icon-check");
+        this.$el.find("#navigationbar #select-toggle .file-select").addClass("mdfi_toggle_check_box_outline_blank").removeClass("mdfi_toggle_check_box");
       }
 
       this.$el.find('#navigationbar #select-toggle input').prop('checked', state).change();
