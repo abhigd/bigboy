@@ -492,11 +492,34 @@ var FileMetaView = baseBucketView.extend({
   }
 });
 
+var SideBarItemView = baseBucketView.extend({
+
+  el: "<li>",
+
+  template: _.template($('#files-sidebar-bucket-template').html()),
+
+  events: {
+    "click a": "changeBucket"
+  },
+
+  changeBucket: function(e) {
+    e.preventDefault();
+
+    app.router.navigate("bucket/" + this.model.id, {trigger: true});
+  },
+
+  render: function() {
+    this.$el.html(this.template(this.model.toJSON()));
+
+    return this;
+  },
+
+});
+
 var SideBarView = baseBucketView.extend({
 
   el: "#sidebar",
 
-  bucketTemplate: _.template($('#files-sidebar-bucket-template').html()),
   template: _.template($('#files-sidebar-template').html()),
 
   initialize: function(options) {
@@ -515,14 +538,17 @@ var SideBarView = baseBucketView.extend({
     return this;
   },
 
+  refresh: function(bucket) {
+
+  },
+
   sync: function() {
 
   },
 
   addOne: function(model) {
-    // console.log(this);
-    this.$el.find("#bucket-list").append(this.template(model.toJSON()));
-    this.$el.find("#bucket-list").append(this.bucketTemplate(model.toJSON()));
+    var bucketItem = new SideBarItemView({model: model});
+    this.$el.find("#bucket-list").append(bucketItem.render().el);
   },
 
   removeOne: function(model) {
