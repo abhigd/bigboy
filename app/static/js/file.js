@@ -162,9 +162,9 @@ var fileView = Backbone.View.extend({
       var isChecked = e.currentTarget.checked;
 
       if (isChecked) {
-        this.$el.find(".file-select").addClass("el-icon-check").removeClass("el-icon-check-empty");
+        this.$el.find(".file-select").addClass("mdfi_toggle_check_box").removeClass("mdfi_toggle_check_box_outline_blank");
       } else {
-        this.$el.find(".file-select").addClass("el-icon-check-empty").removeClass("el-icon-check");
+        this.$el.find(".file-select").addClass("mdfi_toggle_check_box_outline_blank").removeClass("mdfi_toggle_check_box");
       }
 
       this.model.set("isSelected", isChecked);
