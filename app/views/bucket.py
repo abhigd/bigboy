@@ -53,6 +53,14 @@ def render_bucket(bucket="", key="", path=""):
                         region=region)
 
     token = sts_connection.get_session_token().to_dict()
+    if bucket != "":
+        s3_bucket = s3_connection.get_bucket(bucket)
+        bucket_details = current_app.redis_client.hgetall(bucket)
+        if bucket_details:
+            bucket_details["id"] = str(bucket)
+            pass
+        else:
+            print "Fetch bucket info"
 
     # assumedRoleObject = sts_connection.assume_role(
     #                         role_arn=vc5_role_arn,
@@ -63,7 +71,8 @@ def render_bucket(bucket="", key="", path=""):
     #                     aws_secret_access_key=assumedRoleObject.credentials.secret_key,
     #                     security_token=assumedRoleObject.credentials.session_token)
 
-    return render_template('bucket.html', token=json.dumps(token))
+    return render_template('bucket.html', token=json.dumps(token),
+        bucket=bucket_details)
 
 @app.route('/api/bucket/')
 @login_required

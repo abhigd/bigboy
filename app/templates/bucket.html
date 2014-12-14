@@ -11,7 +11,7 @@
 {% block content %}
     <script>
         var root_creds = {{ token|safe }};
-
+        var bucket_details = {{ bucket|safe }};
     </script>
     {{ super() }}
 {% endblock %}
