@@ -3,16 +3,13 @@
 {% block scripts %}
     <script type="text/javascript" src="/static/js/BigBoyUploader.js"></script>
     <script type="text/javascript" src="/static/js/fileModel.js"></script>
-    <script type="text/javascript" src="/static/js/userModel.js"></script>
-    <script type="text/javascript" src="/static/js/linkModel.js"></script>
-    <script type="text/javascript" src="/static/js/user.js"></script>
-    <script type="text/javascript" src="/static/js/link.js"></script>
     <script type="text/javascript" src="/static/js/file.js"></script>
     <script type="text/javascript" src="/static/js/app.js"></script>
 {% endblock %}
-{% block search %}
-    {{ search.search_bar() }}
-{% endblock %}
 {% block content %}
+    <script>
+        var root_creds = {{ token|safe }};
+        var bucket_details = {{ bucket|safe }};
+    </script>
     {{ super() }}
 {% endblock %}

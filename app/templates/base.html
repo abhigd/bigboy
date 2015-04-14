@@ -10,38 +10,11 @@
     {% block head %}
     <title>{% block title %}{% endblock %} - My Webpage</title>
     {% endblock %}
-    <style>
-        body {
-            background-image: url({{ config.COLORLOVERS_LINK }});
-            font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 14px;
-            line-height: 20px;
-            color: #333333;
-            background-color: #ffffff;
-
-        }
-
-        a {
-            /*color: #85A7BA;*/
-        }
-
-    </style>
 </head>
 <body>
-    <div id="header">
-        <div id="header-navigation">
-            <div class="content clearfix">
-            </div>
-        </div>
-        <div id="user-options"></div>
-    </div>
     <div id="main">
-        {% block search %}{% endblock %}
         {% block content %}
-        <div id="link-app" class="container-fluid">
-        </div>
-        <div id="file-app" class="container-fluid">
-        </div>
+        <div id="file-app" class="container-fluid"></div>
         {% endblock %}
     </div>
     <div id="footer"></div>
@@ -52,5 +25,6 @@
     <script type="text/javascript" src="/static/js/underscore.min.js"></script>
     <script type="text/javascript" src="/static/js/backbone.min.js"></script>
     <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/static/js/aws-sdk.js"></script>
     {% block scripts %}{% endblock %}
 </body>

@@ -11,10 +11,10 @@ self.onmessage = function(e) {
 
   var f = fileReader.readAsArrayBuffer(file);
   var hash = CryptoJS.MD5( CryptoJS.lib.WordArray.create(f) );
-  var b64_hash = hash.toString(CryptoJS.enc.Base64)
+  var b64_hash = hash.toString(CryptoJS.enc.Base64);
 
   function post(data) {
-    self.postMessage(data)
+    self.postMessage(data);
   }
 
   function uploadForm(data) {
@@ -82,12 +82,12 @@ self.onmessage = function(e) {
   }
 
 
-  var url = urlPath + "?phase=form"
+  var url = urlPath + "?phase=form";
   var payload = {
     'name': workerData.file.name,
     'size': workerData.file.size,
     'hash': b64_hash
-  }
+  };
   if (workerData.key) {
     payload['key'] = workerData.key;
   }

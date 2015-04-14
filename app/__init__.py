@@ -23,8 +23,8 @@ from flask.ext.login import LoginManager
 from session import RedisSessionInterface
 import pygeoip
 
-import logging
-logging.basicConfig(filename="bigboy.log", level=logging.INFO)
+# import logging
+# logging.basicConfig(filename="bigboy.log", level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -55,37 +55,17 @@ def startup():
         # current_app.s3_connections = s3_connections
 
         # Redis
-        redis_host = app.config.get('REDIS_HOST', 'localhost')
-        redis_port = app.config.get('REDIS_PORT', 6379)
-        redis_db = app.config.get('REDIS_DB', 0)
-        redis_password = app.config.get('REDIS_PASSWORD')
-        pool = redis.ConnectionPool(host=redis_host, port=redis_port,
-                                        db=redis_db, password=redis_password)
-        current_app.redis_client = redis_client = redis.Redis(connection_pool=pool)
+        # redis_host = app.config.get('REDIS_HOST', 'localhost')
+        # redis_port = app.config.get('REDIS_PORT', 6379)
+        # redis_db = app.config.get('REDIS_DB', 0)
+        # redis_password = app.config.get('REDIS_PASSWORD')
+        # pool = redis.ConnectionPool(host=redis_host, port=redis_port,
+        #                                 db=redis_db, password=redis_password)
+        # current_app.redis_client = redis_client = redis.Redis(connection_pool=pool)
 
-        # CloudFront
-        for cn, cn_info in app.config.get('BUCKET_MAP').iteritems():
-            redis_client.set("config:%s:bucket" % cn, cn_info["bucket"])
-            redis_client.set("config:%s:anon_bucket" % cn, cn_info["anon_bucket"])
-            redis_client.set("config:%s:cf_id" % cn, cn_info["cf_id"])
-            redis_client.set("config:%s:cf_id" % cn_info["bucket"], cn_info["cf_id"])
-            redis_client.set("config:%s:cf" % cn_info["cf_id"], cn_info["cf"])
-            redis_client.set("config:%s:cn" % cn_info["bucket"], cn)
-            redis_client.set("config:%s:cn" % cn_info["anon_bucket"], cn)
+        # current_app.gi = pygeoip.GeoIP('GeoIP.dat')
 
-        current_app.cf_keypair_id = app.config.get('CF_PRIVATE_ID')
-        current_app.cf_private_key_file = app.config.get('CF_PRIVATE_PEM_FILE')
-
-        # SQS
-        sqs_region = SQSRegionInfo(name='ap-southeast-1',
-                                  endpoint='ap-southeast-1.queue.amazonaws.com')
-        sqs_conn = SQSConnection(AWS_ACCESS, AWS_SECRET, region=sqs_region)
-        sqs_queue = sqs_conn.get_queue("celery")
-        sqs_failed_queue = sqs_conn.get_queue("failed")
-
-        current_app.gi = pygeoip.GeoIP('GeoIP.dat')
-
-        current_app.session_interface = RedisSessionInterface(redis_client)
+        # current_app.session_interface = RedisSessionInterface(redis_client)
         # print app.config.get("ENVIRONMENT")
         from app.views import auth, files, link, user
         app.run('0.0.0.0', current_app.config.get('PORT'))

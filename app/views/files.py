@@ -37,8 +37,8 @@ def nocache(f):
         return resp
     return update_wrapper(new_func, f)
 
-@app.route('/files/upload/', methods=["POST"])
-@login_required
+@app.route('/files/upload/', methods=["GET"])
+# @login_required
 def manage_upload():
     phase = request.args.get("phase", "init")
 

@@ -9,6 +9,8 @@
       this._files = this.elem.files;
       this._filesCount = this._files.length;
       this.key = null;
+      this.s3 = null;
+      this.debug = false;
 
       var reader;
 
@@ -21,7 +23,7 @@
             if (pointer <= size) {
               start = pointer;
               if (size-pointer < step) {
-                end = pointer+(size-pointer)
+                end = pointer+(size-pointer);
               }else {
                 end = pointer+step;
               }
@@ -32,7 +34,7 @@
             } else {
               throw "End of file";
             }
-          }
+          };
       };
 
       this.start = function() {
@@ -52,7 +54,7 @@
         var file = this._files[this._currentFileInUpload],
             fileSize = file.size;
 
-        if (fileSize >= 1024*1024*6) {
+        if (fileSize >= 1024*1024*5) {
           this._multiPartUpload(file);
         } else {
           this._formUpload(file);
@@ -60,12 +62,12 @@
 
         this.options.onFileStart.call(this, this._currentFileInUpload);
         this._currentFileInUpload++;
-      }
+      };
 
       this._formUpload = function(file) {
         var fileSize = file.size;
-        var worker = new Worker('/static/js/formUploadWorker.js?ts='+ new Date().getTime());
-        var self = this, initPayload = {"file": file, "urlPath": this.options.urlPath};
+        var worker = new Worker('/static/js/partUploadWorker.js?ts='+ new Date().getTime());
+        var self = this;
 
         worker.onmessage = function(e) {
           switch (e.data.type) {
@@ -80,21 +82,53 @@
               self.options.onProgress.call(this, self.key, fileIdx, e.data.data);
               break;
             case "failure":
-              console.warn(e.data.data);
+              // console.warn(e.data.data);
               self._completeFileUpload(false);
               break;
             case "debug":
-              console.log(e.data)
+              // console.log(e.data);
               break;
 
           }
         };
 
-        if (this.options.s3_key)
-          initPayload.key = this.options.s3_key
+        var bucket = this.options.bucket;
+        var key = this.options.prefix + file.name;
 
-        worker.postMessage(initPayload);
-      }
+        var params = {
+          Bucket: bucket,
+          Key: key,
+        };
+        var req = self.options.s3.uploadPart(params);
+
+        req.httpRequest.path = "/" + encodeURIComponent(key);
+        req.httpRequest.virtualHostedBucket = bucket;
+        req.httpRequest.method = "PUT";
+        req.httpRequest.headers["Content-Length"] = file.size;
+        req.httpRequest.headers["Content-Type"] = "application/octet-stream";
+        // req.httpRequest.headers["Content-MD5"] = AWS.util.crypto.md5(file, 'base64');
+        req.service.config.getCredentials(function (err, credentials) {
+          var date = AWS.util.date.getDate();
+          var signer = new AWS.Signers.S3(req.httpRequest);
+          var url_part = encodeURIComponent(key);
+          var url = "https://"+ bucket +
+            ".s3.amazonaws.com/" + url_part;
+
+          signer.addAuthorization(credentials, date);
+          worker.postMessage({
+            'blob': file,
+            'info': [
+              "",
+              key,
+              "",
+              file.size,
+              bucket
+            ],
+            'headers': req.httpRequest.headers,
+            'url': url
+          });
+        });
+      };
 
       this._multiPartUpload = function(file) {
         var fileSize = file.size,
@@ -106,22 +140,28 @@
         var workerCount = fileSize/fileChunkSize > 4 ? 4: Math.ceil(fileSize/fileChunkSize);
 
         if (this.options.s3_key)
-          initPayload.key = this.options.s3_key
+          initPayload.key = this.options.s3_key;
 
-        $.ajax({
-          url: this.options.urlPath+"?phase=init",
-          type: "POST",
-          contentType: "application/json",
-          data: JSON.stringify(initPayload),
-          processData: false
-        }).then(function(data) {
-          initWorkers(data);
+        var params = {
+          Bucket: this.options.bucket,
+          Key: this.options.prefix + file.name,
+          ContentType: file.type,
+          ServerSideEncryption: 'AES256',
+          StorageClass: 'REDUCED_REDUNDANCY'
+        };
+
+        var req = this.options.s3.createMultipartUpload(params);
+        req.send(function(err, data) {
+          if (err) console.log(err, err.stack); // an error occurred
+          else {
+            initWorkers(data);
+          }
         });
 
         var initWorkers = function(data) {
-          self.key = data.key;
-          upId = data.id;
-          bucket = data.bucket;
+          self.key = data.Key;
+          upId = data.UploadId;
+          bucket = data.Bucket;
 
           for (var i = 0; i < workerCount; i++) {
             var worker = new Worker('/static/js/partUploadWorker.js?ts='+ new Date().getTime());
@@ -133,7 +173,7 @@
                     feedNextChunk(worker, nextChunk);
                   }
                   catch (e) {
-                    countWorkers()
+                    countWorkers();
                   }
                   break;
                 case "progress":
@@ -143,13 +183,13 @@
                   self.options.onProgress.call(self, self.key, fileIdx, percentLoaded);
                   break;
                 case "hash":
-                  console.log(e.data.data)
+                  console.log(e.data.data);
                   break;
                 case "failure":
-                  console.warn(e.data)
+                  console.warn(e.data);
                   break;
                 case "debug":
-                  console.log(e.data)
+                  console.log(e.data);
                   break;
               }
             };
@@ -161,54 +201,111 @@
         };
 
         var feedNextChunk = function(worker, chunk) {
+          var params = {
+            Bucket: bucket,
+            Key: self.key,
+            PartNumber: chunk[0],
+            UploadId: upId,
+          };
           var blob = file.slice(chunk[1], chunk[2]+1);
-          worker.postMessage({
-            'blob': blob,
-            'info': [
-              chunk[0],
-              self.key,
-              upId,
-              chunk[2]-chunk[1]+1,
-              bucket
-            ]
+
+          var req = self.options.s3.uploadPart(params);
+          req.httpRequest.path = "/" + encodeURIComponent(self.key) +
+            "?partNumber=" + chunk[0] + "&uploadId=" + upId;
+
+          req.httpRequest.virtualHostedBucket = bucket;
+          req.httpRequest.method = "PUT";
+          req.httpRequest.headers["Content-Length"] = chunk[2]-chunk[1]+1;
+          req.httpRequest.headers["Content-Type"] = "application/octet-stream";
+
+          // req.httpRequest.headers["Content-MD5"] = e.data.hash.replace(" ", "+");
+
+          req.service.config.getCredentials(function (err, credentials) {
+            var date = AWS.util.date.getDate();
+            var signer = new AWS.Signers.S3(req.httpRequest);
+            var url_part = encodeURIComponent(self.key) + "?partNumber=" + chunk[0] +
+              "&uploadId=" + upId;
+            var url = "https://"+ bucket +
+              ".s3.amazonaws.com/" + url_part;
+
+            signer.addAuthorization(credentials, date);
+            // console.log(signer.stringToSign());
+            worker.postMessage({
+              'blob': blob,
+              'info': [
+                chunk[0],
+                self.key,
+                upId,
+                chunk[2]-chunk[1]+1,
+                bucket
+              ],
+              'headers': req.httpRequest.headers,
+              'url': url
+            });
           });
         };
 
         var countWorkers = function() {
           workerCount = workerCount - 1;
           // worker.terminate();
-          if (workerCount == 0) {
+          if (workerCount === 0) {
             finishUpload();
           }
         };
 
         var finishUpload = function() {
-          //TODO: Move start and finish upload to web worker
-        $.ajax({
-          url: self.options.urlPath+"?phase=complete",
-          type: "POST",
-          contentType: "application/json",
-          data: JSON.stringify({'s3_key': self.key, 'mp_id': upId}),
-          processData: false
-        }).then(function(data) {
-            self._completeFileUpload(true);
-          }, function(data) {
-            self._completeFileUpload(false);
+          var params = {
+            Bucket: bucket,
+            Key: self.key,
+            UploadId: upId,
+          };
+          self.options.s3.listParts(params, function(err, data) {
+            if (err) console.log(err, err.stack); // an error occurred
+            else {
+              var uploadedParts = data.Parts;
+              var parts = [];
+              uploadedParts.forEach(function(e){
+                parts.push({
+                  "ETag": e.ETag,
+                  "PartNumber": e.PartNumber
+                });
+              });
+
+              var params = {
+                Bucket: data.Bucket,
+                Key: data.Key,
+                UploadId: data.UploadId,
+                MultipartUpload: {
+                  Parts: parts
+                }
+              };
+              self.options.s3.completeMultipartUpload(params, function(err, data) {
+                if (err) {
+                  self._completeFileUpload(false);
+                  console.error(err, err.stack); // an error occurred
+                }
+                else {
+                  self._completeFileUpload(true);
+                }
+              });
+            }
           });
+          //TODO: Move start and finish upload to web worker
         };
-      }
+      };
 
       this._completeFileUpload = function(success) {
         var fileIdx = this._currentFileInUpload - 1;
         this.options.onFileComplete.call(this, this.key, fileIdx, success);
         this._processNextFile();
-      }
+      };
     };
 
   BigBoyUploader.prototype = {
     defaults: {
       message: 'Hello world!',
       urlPath: "/files/upload/",
+      prefix: "",
       onComplete : function() {},
       onProgress: function() {},
       onFileComplete: function() {},
@@ -221,7 +318,7 @@
 
       return this;
     }
-  }
+  };
 
   BigBoyUploader.defaults = BigBoyUploader.prototype.defaults;
 
