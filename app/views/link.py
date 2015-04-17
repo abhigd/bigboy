@@ -22,15 +22,14 @@ from flask.ext.login import login_required, login_url
 def render_links():
     # region = connect_to_region(region_setting)
     sts_connection = STSConnection(
-                        aws_access_key_id=app.config.get("AWS_ACCESS"),
-                        aws_secret_access_key=app.config.get("AWS_SECRET")
-                        )
+        aws_access_key_id=app.config.get("AWS_ACCESS"),
+        aws_secret_access_key=app.config.get("AWS_SECRET"))
 
     token = sts_connection.get_session_token().to_dict()
     bucket_details = {"name": "meer-sg-1", "region": "ap-southeast-1"}
 
-    return render_template('link.html', token=json.dumps(token),
-                bucket=json.dumps(bucket_details))
+    return render_template('link.html',
+        token=json.dumps(token), bucket=json.dumps(bucket_details))
 
 @app.route('/link/<link_id>', methods=['GET'])
 def render_link(link_id):
@@ -43,25 +42,6 @@ def render_link(link_id):
     token = sts_connection.get_session_token().to_dict()
 
     return render_template('link.html', links=[])
-
-@app.route('/link/', methods=['POST'])
-@login_required
-def create_link():
-
-    return jsonify({})
-
-@app.route('/link/<link_id>', methods=['PUT'])
-@login_required
-def edit_link(link_id):
-
-    return jsonify({})
-
-@app.route('/link/<link_id>', methods=["DELETE"])
-@login_required
-def delete_link(link_id):
-
-    response = Response(status=204)
-    return response
 
 @app.route('/link/<link_id>/upload/<file_name>', methods=["PUT"])
 def link_target_upload(link_id, file_name):
@@ -79,5 +59,36 @@ def link_target_upload(link_id, file_name):
     # curl -Lv --upload-file ~/Downloads/xxx.pdf http://celery.meer.io:5000/link/xxx/upload/
     # print url
     # return redirect(url, 307)
+    response = Response(status=204)
+    return response
+
+@app.route('/api/link/', methods=['GET'])
+# @login_required
+def get_links():
+
+    return jsonify({})
+
+@app.route('/api/link/<link_id>', methods=['GET'])
+# @login_required
+def get_link():
+
+    return jsonify({})
+
+@app.route('/api/link/', methods=['POST'])
+# @login_required
+def create_link():
+
+    return jsonify({})
+
+@app.route('/api/link/<link_id>', methods=['PUT'])
+# @login_required
+def edit_link(link_id):
+
+    return jsonify({})
+
+@app.route('/api/link/<link_id>', methods=["DELETE"])
+# @login_required
+def delete_link(link_id):
+
     response = Response(status=204)
     return response
