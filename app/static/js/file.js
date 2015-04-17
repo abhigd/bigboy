@@ -110,7 +110,6 @@ var FileView = Backbone.View.extend({
 var UploadsView = Backbone.View.extend({
 
     fileId: 'file-upload',
-    collection: uploads,
     template: _.template($('#uploads-base-template').html()),
 
     events: {
@@ -118,7 +117,7 @@ var UploadsView = Backbone.View.extend({
       "click .file-input-wrapper": "showFilePicker"
     },
 
-    initialize: function() {
+    initialize: function(options) {
 
       _.bindAll(this, 'startFileUpload', 'showFilePicker');
 
@@ -139,6 +138,7 @@ var UploadsView = Backbone.View.extend({
       });
       this.bucket = bucket_details["name"];
       this.prefix = "/foobar";
+      this.parent = options.parent;
     },
 
     render: function() {
@@ -204,7 +204,9 @@ var UploadsView = Backbone.View.extend({
           if (result === true) {
             self.collection.remove(file);
             file.set("created", new Date().getTime());
-            files.add(file, {at:0});
+            console.log(file);
+            self.parent.trigger("upload::complete", file);
+            // self.collection.add(file, {at:0});
           }
         },
         onProgress: function(key, fileIdx, progressPercent) {
@@ -223,8 +225,6 @@ var UploadsView = Backbone.View.extend({
 });
 
 var FilesView = Backbone.View.extend({
-
-    collection: files,
 
     events: {
       "change .file-select input": "fileSelected",

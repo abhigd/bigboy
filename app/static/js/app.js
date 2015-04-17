@@ -2,21 +2,39 @@ var FileAppView = Backbone.View.extend({
 
     el: "#file-app",
 
+    currentLinkView: undefined,
+
     events: {
+
     },
 
     template: _.template($('#file-app-template').html()),
 
     initialize: function() {
       _.bindAll(this, "render");
-      this.uploads = new UploadsView({el: "#file-app"});
-      this.links = new FilesView({el: "#file-app"});
+      this.links = new Files();
+      this.uploads = new UploadFiles();
+      this.uploadView = new UploadsView({
+        parent: this,
+        collection: this.uploads,
+        el: "#file-app"
+      });
+      this.linkView = new FilesView({
+        parent: this,
+        collection: this.links,
+        el: "#file-app"
+      });
+
+      this.currentLinkView = this.linkView;
+      this.on("upload::complete", function(file) {
+        console.log("File upload completed " + file.get('name'));
+      });
     },
 
     render: function() {
       this.$el.html(this.template());
-      this.uploads.render();
-      this.links.render();
+      this.uploadView.render();
+      this.linkView.render();
     },
 
     onClose: function() {

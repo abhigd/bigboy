@@ -6,7 +6,7 @@ var File = Backbone.Model.extend({
 
 });
 
-var uploadFiles = Backbone.Collection.extend({
+var UploadFiles = Backbone.Collection.extend({
 
     model: UploadFile
 });
@@ -78,5 +78,3 @@ var Files = Backbone.Collection.extend({
 
 });
 
-var uploads = new uploadFiles();
-var files = new Files();
