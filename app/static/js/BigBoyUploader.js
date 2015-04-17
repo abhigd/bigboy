@@ -57,14 +57,14 @@
         if (fileSize >= 1024*1024*5) {
           this._multiPartUpload(file);
         } else {
-          this._formUpload(file);
+          this._upload(file);
         }
 
         this.options.onFileStart.call(this, this._currentFileInUpload);
         this._currentFileInUpload++;
       };
 
-      this._formUpload = function(file) {
+      this._upload = function(file) {
         var fileSize = file.size;
         var worker = new Worker('/static/js/partUploadWorker.js?ts='+ new Date().getTime());
         var self = this;
@@ -83,12 +83,12 @@
               break;
             case "failure":
               // console.warn(e.data.data);
-              self._completeFileUpload(false);
+              self._completeFileUpload(false, e.data.data);
               break;
             case "debug":
-              // console.log(e.data);
+              if (self.debug)
+                console.log(e.data);
               break;
-
           }
         };
 
@@ -98,6 +98,9 @@
         var params = {
           Bucket: bucket,
           Key: key,
+          ContentType: file.type,
+          ServerSideEncryption: 'AES256',
+          StorageClass: 'REDUCED_REDUNDANCY'
         };
         var req = self.options.s3.uploadPart(params);
 
@@ -105,8 +108,7 @@
         req.httpRequest.virtualHostedBucket = bucket;
         req.httpRequest.method = "PUT";
         req.httpRequest.headers["Content-Length"] = file.size;
-        req.httpRequest.headers["Content-Type"] = "application/octet-stream";
-        // req.httpRequest.headers["Content-MD5"] = AWS.util.crypto.md5(file, 'base64');
+        req.httpRequest.headers["Content-Type"] = file.type;
         req.service.config.getCredentials(function (err, credentials) {
           var date = AWS.util.date.getDate();
           var signer = new AWS.Signers.S3(req.httpRequest);
@@ -117,15 +119,9 @@
           signer.addAuthorization(credentials, date);
           worker.postMessage({
             'blob': file,
-            'info': [
-              "",
-              key,
-              "",
-              file.size,
-              bucket
-            ],
-            'headers': req.httpRequest.headers,
-            'url': url
+            'size': file.size,
+            'url': url,
+            'headers': req.httpRequest.headers
           });
         });
       };
@@ -133,18 +129,21 @@
       this._multiPartUpload = function(file) {
         var fileSize = file.size,
             fileChunkSize = 1024*1024*5,
-            key, upId, fileUploaded=0, workers=[],
-            self=this, bucket;
-        var initPayload = {'size': fileSize, 'type': file.type, 'name': file.name};
+            workers=[], self=this;
+
+        // var initPayload = {'size': fileSize, 'type': file.type, 'name': file.name};
         var chunker2 = new this._chunker(fileSize, fileChunkSize);
         var workerCount = fileSize/fileChunkSize > 4 ? 4: Math.ceil(fileSize/fileChunkSize);
 
         if (this.options.s3_key)
           initPayload.key = this.options.s3_key;
 
+        var bucket = this.options.bucket;
+        var key = this.options.prefix + file.name;
+
         var params = {
-          Bucket: this.options.bucket,
-          Key: this.options.prefix + file.name,
+          Bucket: bucket,
+          Key: key,
           ContentType: file.type,
           ServerSideEncryption: 'AES256',
           StorageClass: 'REDUCED_REDUNDANCY'
@@ -159,9 +158,10 @@
         });
 
         var initWorkers = function(data) {
-          self.key = data.Key;
-          upId = data.UploadId;
-          bucket = data.Bucket;
+          var key = data.Key;
+          var uploadId = data.UploadId;
+          var bucket = data.Bucket;
+          var fileUploaded = 0;
 
           for (var i = 0; i < workerCount; i++) {
             var worker = new Worker('/static/js/partUploadWorker.js?ts='+ new Date().getTime());
@@ -170,10 +170,10 @@
                 case "complete":
                   try {
                     nextChunk = chunker2.next();
-                    feedNextChunk(worker, nextChunk);
+                    feedNextChunk(worker, bucket, key, uploadId, nextChunk);
                   }
                   catch (e) {
-                    countWorkers();
+                    countWorkers(bucket, key, uploadId);
                   }
                   break;
                 case "progress":
@@ -189,75 +189,67 @@
                   console.warn(e.data);
                   break;
                 case "debug":
-                  console.log(e.data);
+                  if (self.debug)
+                    console.log(e.data);
                   break;
               }
             };
 
             chunk = chunker2.next();
-            feedNextChunk(worker, chunk);
+            feedNextChunk(worker, bucket, key, uploadId, chunk);
             workers.push(worker);
           }
         };
 
-        var feedNextChunk = function(worker, chunk) {
+        var feedNextChunk = function(worker, bucket, key, uploadId, chunk) {
           var params = {
             Bucket: bucket,
-            Key: self.key,
+            Key: key,
             PartNumber: chunk[0],
-            UploadId: upId,
+            UploadId: uploadId,
           };
           var blob = file.slice(chunk[1], chunk[2]+1);
 
           var req = self.options.s3.uploadPart(params);
-          req.httpRequest.path = "/" + encodeURIComponent(self.key) +
-            "?partNumber=" + chunk[0] + "&uploadId=" + upId;
+          req.httpRequest.path = "/" + encodeURIComponent(key) +
+            "?partNumber=" + chunk[0] + "&uploadId=" + uploadId;
 
           req.httpRequest.virtualHostedBucket = bucket;
           req.httpRequest.method = "PUT";
           req.httpRequest.headers["Content-Length"] = chunk[2]-chunk[1]+1;
-          req.httpRequest.headers["Content-Type"] = "application/octet-stream";
-
-          // req.httpRequest.headers["Content-MD5"] = e.data.hash.replace(" ", "+");
+          req.httpRequest.headers["Content-Type"] = file.type;
 
           req.service.config.getCredentials(function (err, credentials) {
             var date = AWS.util.date.getDate();
             var signer = new AWS.Signers.S3(req.httpRequest);
-            var url_part = encodeURIComponent(self.key) + "?partNumber=" + chunk[0] +
-              "&uploadId=" + upId;
+            var url_part = encodeURIComponent(key) + "?partNumber=" + chunk[0] +
+              "&uploadId=" + uploadId;
             var url = "https://"+ bucket +
               ".s3.amazonaws.com/" + url_part;
 
             signer.addAuthorization(credentials, date);
-            // console.log(signer.stringToSign());
             worker.postMessage({
-              'blob': blob,
-              'info': [
-                chunk[0],
-                self.key,
-                upId,
-                chunk[2]-chunk[1]+1,
-                bucket
-              ],
-              'headers': req.httpRequest.headers,
-              'url': url
+              'blob': file,
+              'size': file.size,
+              'url': url,
+              'headers': req.httpRequest.headers
             });
           });
         };
 
-        var countWorkers = function() {
+        var countWorkers = function(bucket, key, uploadId) {
           workerCount = workerCount - 1;
           // worker.terminate();
           if (workerCount === 0) {
-            finishUpload();
+            finishUpload(bucket, key, uploadId);
           }
         };
 
-        var finishUpload = function() {
+        var finishUpload = function(bucket, key, uploadId) {
           var params = {
             Bucket: bucket,
-            Key: self.key,
-            UploadId: upId,
+            Key: key,
+            UploadId: uploadId,
           };
           self.options.s3.listParts(params, function(err, data) {
             if (err) console.log(err, err.stack); // an error occurred
@@ -285,6 +277,7 @@
                   console.error(err, err.stack); // an error occurred
                 }
                 else {
+                  console.info(data);
                   self._completeFileUpload(true);
                 }
               });

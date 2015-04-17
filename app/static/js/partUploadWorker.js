@@ -1,13 +1,3 @@
-importScripts('md5.js');
-importScripts('enc-base64-min.js');
-importScripts('lib-typedarrays.js');
-
-var xhr = new XMLHttpRequest(),
-  fileReader = new FileReaderSync(),
-  chunkUploadedSinceLastEvent=0,
-  s3Key, partNumber, uploadId,
-  bucket_name, size, blob, file, hash, b64_hash;
-
 self.onmessage = function(e) {
   var data = e.data;
 
@@ -15,9 +5,9 @@ self.onmessage = function(e) {
     self.postMessage(data);
   }
 
-  function uploadPart(url, headers) {
-    var xhr = new XMLHttpRequest();
-    var length = size;
+  function uploadPart(blob, length, url, headers) {
+    var xhr = new XMLHttpRequest(),
+    chunkUploadedSinceLastEvent=0;
 
     xhr.upload.onprogress = function(e) {
       if (e.lengthComputable) {
@@ -30,7 +20,7 @@ self.onmessage = function(e) {
     };
     xhr.onload = function(e) {
       if (this.status < 299) {
-        post({"type": "progress", "data": size});
+        post({"type": "progress", "data": length});
         post({"type": "complete", "data": e.data});
       } else {
         post({"type": "failure", "data": this.statusText});
@@ -42,7 +32,6 @@ self.onmessage = function(e) {
 
     xhr.open('PUT', url, true);
     xhr.setRequestHeader("Content-Type", headers["Content-Type"]);
-    // xhr.setRequestHeader("Content-MD5", headers["Content-MD5"]);
     xhr.setRequestHeader("x-amz-date", headers["X-Amz-Date"]);
     xhr.setRequestHeader("Authorization", headers["Authorization"]);
     xhr.setRequestHeader("x-amz-security-token", headers["x-amz-security-token"]);
@@ -51,13 +40,5 @@ self.onmessage = function(e) {
     xhr.send(blob);
   }
 
-  // file = fileReader.readAsArrayBuffer(data.blob);
-  // hash = CryptoJS.MD5( CryptoJS.lib.WordArray.create(file) );
-  // b64_hash = hash.toString(CryptoJS.enc.Base64);
-
-  size = data.info[3];
-  blob = data.blob;
-
-  var url = data.url;
-  uploadPart(url, data.headers);
+  uploadPart(data.blob, data.size, data.url, data.headers);
 };
