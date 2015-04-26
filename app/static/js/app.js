@@ -28,16 +28,40 @@ var AppView = Backbone.View.extend({
         el: "#app-view"
       });
 
-      this.currentLinkView = this.linkView;
-      this.on("upload::complete", function(file) {
+      // Render existing links
+      this.links.fetch();
+
+      // Wire in events for new files being uploaded
+
+      // When a new upload session starts
+      //    Create a new link
+      //    Use that as the prefix for new uploads
+      this.on("upload::init", function(file) {
+        console.log("Starting new upload session");
+        var link = this.links.create({}, {wait: true});
+
+        // this.currentFileView = filesView;
+        // this.currentLinkView = linkView;
+
+        this.trigger('upload::begin', link);
+      });
+
+      this.on("upload::file::complete", function(file) {
+        this.links.add(file, {at:0});
         console.log("File upload completed " + file.get('name'));
+      });
+
+      // When all uploads complete including failed ones.
+      //  Request server to update list of files uploaded to this link
+      this.on("upload::complete", function(file) {
+        console.log("All uploads completed");
       });
     },
 
     render: function() {
       this.$el.html(this.template());
       this.uploadView.render();
-      this.linkView.render();
+      this.linksView.render();
     },
 
     onClose: function() {
