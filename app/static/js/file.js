@@ -110,7 +110,7 @@ var FileView = Backbone.View.extend({
 var UploadsView = Backbone.View.extend({
 
     fileId: 'file-upload',
-    template: _.template($('#uploads-base-template').html()),
+    template: _.template($('#uploads-template').html()),
 
     events: {
       "change input.file-input": "initUpload",
@@ -233,7 +233,7 @@ var FilesView = Backbone.View.extend({
       "change .file-select input": "fileSelected",
     },
 
-    template: _.template($('#files-base-template').html()),
+    template: _.template($('#files-template').html()),
 
     initialize: function() {
       _.bindAll(this, 'sync', 'addOne', 'removeOne');
@@ -259,7 +259,6 @@ var FilesView = Backbone.View.extend({
     addOne: function(file) {
       var view = new FileView({model: file});
       var idx = this.collection.indexOf(file);
-      console.log("Hello");
 
       if (idx === 0) {
         this.$(".file-list").prepend(view.render().el);
@@ -300,7 +299,7 @@ var FileInfoView = Backbone.View.extend({
     events: {
     },
 
-    template: _.template($('#file-base-template').html()),
+    template: _.template($('#file-template').html()),
 
     initialize: function() {
       _.bindAll(this, 'render');
@@ -386,3 +385,4 @@ var LinksView = Backbone.View.extend({
       this.$("#"+id).remove();
     }
 
+});
