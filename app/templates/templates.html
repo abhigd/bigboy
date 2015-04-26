@@ -1,12 +1,19 @@
 {% raw %}
-<script type="text/template" id="file-app-template">
+
+<script type="text/template" id="app-template">
 </script>
 
-<script type="text/template" id="files-base-template">
+<script type="text/template" id="files-template">
   <div class="file-list container-fluid"></div>
 </script>
 
-<script type="text/template" id="uploads-base-template">
+<script type="text/template" id="file-template">
+    Filename is <%= name %>, size is <%= size %>.
+    Uploaded on <%= created %>.
+    <span><%= progress %></span>
+</script>
+
+<script type="text/template" id="uploads-template">
     <div class="well">
         <input id="file-upload" type='file' class='file-input' multiple/>
         <button class="file-input-wrapper">Upload</button>
@@ -17,12 +24,15 @@
 <script type="text/template" id="upload-file-template">
 </script>
 
-<script type="text/template" id="file-template">
-    Filename is <%= name %>, size is <%= size %>.
-    Uploaded on <%= created %>.
-    <span><%= progress %></span>
+<script type="text/template" id="links-template">
+  <div class="links-list file-list container-fluid"></div>
 </script>
 
-<script type="text/template" id="file-base-template">
+<script type="text/template" id="link-template">
+    <div class="link-details-wrapper">
+        <%= id %>Created at <%= created_at %>
+    </div>
+    <div class="link-files-wrapper"></div>
 </script>
+
 {% endraw %}
