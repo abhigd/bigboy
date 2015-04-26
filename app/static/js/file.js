@@ -113,21 +113,21 @@ var UploadsView = Backbone.View.extend({
     template: _.template($('#uploads-base-template').html()),
 
     events: {
-      "change input.file-input": "startFileUpload",
+      "change input.file-input": "initUpload",
       "click .file-input-wrapper": "showFilePicker"
     },
 
     initialize: function(options) {
 
-      _.bindAll(this, 'startFileUpload', 'showFilePicker');
+      this.app = options.app;
+      _.bindAll(this, 'initUpload', 'startUpload', 'showFilePicker');
 
       this.listenTo(this.collection, "add", this.addOne);
       this.listenTo(this.collection, "remove", this.removeOne);
       // this.listenTo(this.collection, "change:uploadStatus", this.updateStatus);
       // this.listenTo(this.collection, "change:progress", this.updateProgress);
 
-      // this.on('upload-start')
-      // this.on('upload-complete', this.uploadComplete);
+      this.app.on('upload::begin', this.startUpload);
       var region = bucket_details["region"];
 
       this.s3 = new AWS.S3({
@@ -137,8 +137,7 @@ var UploadsView = Backbone.View.extend({
             region: region
       });
       this.bucket = bucket_details["name"];
-      this.prefix = "/foobar";
-      this.parent = options.parent;
+      this.prefix = "";
     },
 
     render: function() {
@@ -164,9 +163,14 @@ var UploadsView = Backbone.View.extend({
       this.$el.find('input.file-input').trigger("click");
     },
 
-    startFileUpload: function(e) {
+    initUpload: function(e) {
+      this.fileTarget = e.currentTarget;
+      this.app.trigger('upload::init', this);
+    },
+
+    startUpload: function(link) {
       var self = this;
-      var currentTargetFile = e.currentTarget;
+      var currentTargetFile = this.fileTarget;
 
       _.each(currentTargetFile.files, function(e, i, l) {
         this.collection.add(
@@ -185,10 +189,10 @@ var UploadsView = Backbone.View.extend({
       $(currentTargetFile).BigBoyUploader({
         s3: this.s3,
         bucket: this.bucket,
-        prefix: "",
+        prefix: link.id,
         onComplete: function() {
           console.log("All files completed");
-          // self.parent.trigger('upload-complete', self);
+          self.app.trigger('upload::all::complete', self);
         },
         onFileStart: function(fileIdx) {
           var file = self.collection.findWhere({'input_id': self.fileId, 'file_idx': fileIdx});
@@ -204,8 +208,7 @@ var UploadsView = Backbone.View.extend({
           if (result === true) {
             self.collection.remove(file);
             file.set("created", new Date().getTime());
-            console.log(file);
-            self.parent.trigger("upload::complete", file);
+            self.app.trigger("upload::file::complete", file);
             // self.collection.add(file, {at:0});
           }
         },
