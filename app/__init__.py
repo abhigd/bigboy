@@ -55,13 +55,13 @@ def startup():
         # current_app.s3_connections = s3_connections
 
         # Redis
-        # redis_host = app.config.get('REDIS_HOST', 'localhost')
-        # redis_port = app.config.get('REDIS_PORT', 6379)
-        # redis_db = app.config.get('REDIS_DB', 0)
-        # redis_password = app.config.get('REDIS_PASSWORD')
-        # pool = redis.ConnectionPool(host=redis_host, port=redis_port,
-        #                                 db=redis_db, password=redis_password)
-        # current_app.redis_client = redis_client = redis.Redis(connection_pool=pool)
+        redis_host = app.config.get('REDIS_HOST', 'localhost')
+        redis_port = app.config.get('REDIS_PORT', 6379)
+        redis_db = app.config.get('REDIS_DB', 0)
+        redis_password = app.config.get('REDIS_PASSWORD')
+        pool = redis.ConnectionPool(host=redis_host, port=redis_port,
+                                        db=redis_db, password=redis_password)
+        current_app.redis_client = redis_client = redis.Redis(connection_pool=pool)
 
         # current_app.gi = pygeoip.GeoIP('GeoIP.dat')
 

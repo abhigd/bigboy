@@ -1,7 +1,7 @@
 import time, uuid, json, calendar
 
 from app import app
-from app.forms  import *
+from app.forms import *
 
 from boto.sts import STSConnection, connect_to_region
 
@@ -66,7 +66,14 @@ def link_target_upload(link_id, file_name):
 # @login_required
 def get_links():
 
-    return jsonify({})
+    links = current_app.redis_client.zrange('links', 0, -1)
+    links_data = []
+    for link in links:
+        link_data = current_app.redis_client.hgetall(link)
+        if link_data:
+            links_data.append(link_data)
+
+    return jsonify({"data": links_data})
 
 @app.route('/api/link/<link_id>', methods=['GET'])
 # @login_required
@@ -78,7 +85,13 @@ def get_link():
 # @login_required
 def create_link():
 
-    return jsonify({})
+    link_id = uuid.uuid4()
+    created_at = time.time()
+    link_data = {'created_at': created_at, 'id': link_id}
+    current_app.redis_client.zadd('links', link_id, 1)
+    current_app.redis_client.hmset(link_id, link_data)
+
+    return jsonify({"id": link_id, "created_at": created_at})
 
 @app.route('/api/link/<link_id>', methods=['PUT'])
 # @login_required
