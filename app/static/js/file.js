@@ -310,3 +310,76 @@ var FileInfoView = Backbone.View.extend({
       return this;
     }
 });
+
+var LinkView = Backbone.View.extend({
+
+    el: '<li class="row">',
+
+    events: {
+    },
+
+    template: _.template($('#link-template').html()),
+
+    initialize: function() {
+      _.bindAll(this, 'render');
+      var files = new Files();
+
+      var filesView = new FilesView({
+        app: this,
+        collection: files,
+        links: this.links,
+        el: linkView.el
+      });
+
+      filesView.render();
+    },
+
+    render: function() {
+      this.$el.html(this.template(this.model.toJSON()));
+
+      return this;
+    }
+});
+
+var LinksView = Backbone.View.extend({
+
+    events: {
+    },
+
+    template: _.template($('#links-template').html()),
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'addOne', 'removeOne');
+
+      // this.collection.bind('sync', this.sync);
+      this.collection.bind('add', this.addOne);
+      this.collection.bind('remove', this.removeOne);
+    },
+
+    render: function() {
+      this.$el.append(this.template());
+
+      this.collection.each(function(model) {
+        this.addOne(model);
+      }, this);
+
+      return this;
+    },
+
+    addOne: function(link) {
+      var view = new LinkView({model: link, app: this.app});
+      var idx = this.collection.indexOf(link);
+
+      if (idx === 0) {
+        this.$(".file-list").prepend(view.render().el);
+      } else {
+        this.$(".file-list").append(view.render().el);
+      }
+
+    },
+
+    removeOne: function(file) {
+      var id = file.get("id");
+      this.$("#"+id).remove();
+    }
+
