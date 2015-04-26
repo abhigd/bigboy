@@ -6,6 +6,10 @@ var File = Backbone.Model.extend({
 
 });
 
+var Link = Backbone.Model.extend({
+
+});
+
 var UploadFiles = Backbone.Collection.extend({
 
     model: UploadFile
@@ -14,6 +18,11 @@ var UploadFiles = Backbone.Collection.extend({
 var Files = Backbone.Collection.extend({
 
     model: File,
+});
+
+var Links = Backbone.Collection.extend({
+
+    model: Link,
 
     comparator: function(file) {
         // if (a.get("created")>=b.get("created")) {
@@ -35,19 +44,7 @@ var Files = Backbone.Collection.extend({
         var end = this.page*this.perPage,
             start = end-this.perPage;
 
-        return "/link/" + '?' + $.param({start: start, end: end});
-    },
-
-    fetch: function(options) {
-        typeof(options) != 'undefined' || (options = {});
-        var self = this;
-        var success = options.success;
-
-        options.success = function(resp) {
-          if(success) { success(self, resp); }
-        };
-
-        return Backbone.Collection.prototype.fetch.call(this, options);
+        return "/api/link/" + '?' + $.param({start: start, end: end});
     },
 
     parse: function(data) {
