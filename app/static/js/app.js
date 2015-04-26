@@ -1,28 +1,31 @@
-var FileAppView = Backbone.View.extend({
+var AppView = Backbone.View.extend({
 
-    el: "#file-app",
+    el: "#app-view",
 
+    currentFileView: undefined,
     currentLinkView: undefined,
 
     events: {
 
     },
 
-    template: _.template($('#file-app-template').html()),
+    template: _.template($('#app-template').html()),
 
     initialize: function() {
       _.bindAll(this, "render");
-      this.links = new Files();
+      this.links = new Links();
       this.uploads = new UploadFiles();
+
       this.uploadView = new UploadsView({
-        parent: this,
+        app: this,
         collection: this.uploads,
-        el: "#file-app"
+        el: "#app-view"
       });
-      this.linkView = new FilesView({
-        parent: this,
+
+      this.linksView = new LinksView({
+        app: this,
         collection: this.links,
-        el: "#file-app"
+        el: "#app-view"
       });
 
       this.currentLinkView = this.linkView;
@@ -41,19 +44,6 @@ var FileAppView = Backbone.View.extend({
     }
 });
 
-
-var AppView = Backbone.View.extend({
-
-    events: {},
-
-    initialize: function() {
-      this.view = new FileAppView();
-    },
-
-    render: function() {
-      this.view.render();
-    }
-});
 
 var AppRouter = Backbone.Router.extend({
 
