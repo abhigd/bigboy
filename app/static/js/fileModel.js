@@ -18,6 +18,25 @@ var UploadFiles = Backbone.Collection.extend({
 var Files = Backbone.Collection.extend({
 
     model: File,
+
+    initialize: function(models, options) {
+        this.link = options.link;
+    },
+
+    url: function() {
+        var link_id = this.link.get("id");
+
+        return "/api/link/" + link_id + "/files/";
+    },
+
+    parse: function(data) {
+        // this.page = data.page;
+        // this.perPage = data.perPage;
+        // this.total = data.total;
+
+        return data.data;
+    }
+
 });
 
 var Links = Backbone.Collection.extend({
