@@ -145,3 +145,7 @@ def get_link_files(link_id):
     return jsonify({"data": files_data})
 
 
+@app.route('/api/link/<link_id>/files/<file_id>', methods=['DELETE'])
+# @login_required
+def delete_link_files():
+    pass
