@@ -66,6 +66,7 @@
 // });
 
 var FileView = Backbone.View.extend({
+var UploadView = Backbone.View.extend({
 
     el: '<li class="row">',
 
@@ -73,7 +74,7 @@ var FileView = Backbone.View.extend({
       "click a.file-link": "showFile",
     },
 
-    template: _.template($('#file-template').html()),
+    template: _.template($('#upload-file-template').html()),
 
     initialize: function() {
       _.bindAll(this, 'showFile', 'renderProgress');
