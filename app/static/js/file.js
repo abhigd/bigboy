@@ -159,6 +159,32 @@ var UploadsView = Backbone.View.extend({
 
 });
 
+var FileView = Backbone.View.extend({
+
+    el: '<li class="row">',
+
+    events: {
+    },
+
+    template: _.template($('#file-template').html()),
+
+    initialize: function() {
+
+      this.listenTo(this.model, 'destroy', this.remove);
+    },
+
+    render: function() {
+      this.$el.html(this.template(this.model.toJSON()));
+      this.$el.prop('id', this.model.get("id"));
+
+      return this;
+    },
+
+    remove: function() {
+      this.$el.remove();
+    }
+});
+
 var FilesView = Backbone.View.extend({
 
     events: {
@@ -167,15 +193,20 @@ var FilesView = Backbone.View.extend({
 
     template: _.template($('#files-template').html()),
 
-    initialize: function() {
+    initialize: function(options) {
+      this.link = options.link;
+      this.app = options.app;
+
       _.bindAll(this, 'sync', 'addOne', 'removeOne');
       _.bindAll(this, 'previous', 'next', 'render');
+      _.bindAll(this, 'detach', 'attach');
 
       this.collection.bind('sync', this.sync);
       this.collection.bind('add', this.addOne);
       this.collection.bind('remove', this.removeOne);
 
-      this.on("selectAll", this.toggleSelectAll);
+      this.app.on("upload::all::complete", this.detach);
+      this.app.on("upload::begin", this.attach);
     },
 
     render: function() {
@@ -186,6 +217,22 @@ var FilesView = Backbone.View.extend({
       }, this);
 
       return this;
+    },
+
+    attach: function(link) {
+      console.log("My link id is " + this.link.id);
+      if (link.id == this.link.id) {
+        console.log("file::Attaching to all upload events");
+        this.app.on("upload::file::complete", this.addOne);
+      } else {
+        console.log("file::Skipping this link event " + link.id);
+      }
+    },
+
+    detach: function(link) {
+      console.log("file::Detaching all events");
+      this.app.off("upload::file::complete");
+      this.app.off("upload::all::complete");
     },
 
     addOne: function(file) {
@@ -206,8 +253,8 @@ var FilesView = Backbone.View.extend({
     },
 
     sync: function() {
-      this.fileSelected();
-      app.fileApp.trigger("toggle-selectAll", false);
+      // this.fileSelected();
+      // app.fileApp.trigger("toggle-selectAll", false);
     },
 
     previous: function() {
