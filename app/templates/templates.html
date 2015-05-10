@@ -7,10 +7,14 @@
   <div class="file-list container-fluid"></div>
 </script>
 
+<script type="text/template" id="upload-file-template">
+    Filename is <%= name %>, size is <%= size %>.
+    progrss is <%= progress %>
+</script>
+
 <script type="text/template" id="file-template">
     Filename is <%= name %>, size is <%= size %>.
-    Uploaded on <%= created %>.
-    <span><%= progress %></span>
+    Uploaded on <%= created_at %>.
 </script>
 
 <script type="text/template" id="uploads-template">
