@@ -105,3 +105,43 @@ def delete_link(link_id):
 
     response = Response(status=204)
     return response
+@app.route('/api/link/<link_id>/files/', methods=['GET'])
+# @login_required
+def get_link_files(link_id):
+    refresh = request.args.get('refresh')
+    start = int(request.args.get('start', '0'))
+    end = int(request.args.get('end', '100'))
+
+    if refresh == "1":
+        bucket = current_app.default_s3_conn.get_bucket("meer-sg-1")
+        keys = bucket.list(link_id+"/", "/")
+        # for group in grouper(keys, 10):
+        #     group_keys = [x.name for x in group if x]
+        #     current_app.redis_client.rpush("%s_files" % link_id,
+        #                                    *group_keys)
+        for k in keys:
+            file_name = k.name.split("/")[-1]
+            file_path = "%s/%s" %(app.config.get("HOSTNAME"), k.name)
+            key_data = {"name": file_name,
+                        "size": k.size,
+                        "link": file_path,
+                        "type": k.content_type,
+                        "metadata": repr(k.metadata),
+                        "created_at": k.last_modified}
+            current_app.redis_client.hmset("%s/%s" % (link_id, k.name),
+                                           key_data)
+            current_app.redis_client.zadd("%s_files" % (link_id), k.name, 1)
+            current_app.redis_client.zadd("%s_files_tmp" % (link_id), k.name, 1)
+
+        current_app.redis_client.zinterstore("%s_files" % (link_id), ["%s_files" % (link_id), "%s_files_tmp" % (link_id)])
+    
+    file_ids = current_app.redis_client.zrange("%s_files" % link_id,
+                                               start, end)
+    files_data = []
+    for file_id in file_ids:
+        key_data = current_app.redis_client.hgetall("%s/%s" % (link_id, file_id))
+        files_data.append(key_data)
+
+    return jsonify({"data": files_data})
+
+
