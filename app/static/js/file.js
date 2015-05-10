@@ -1,71 +1,3 @@
-// var UploadView = Backbone.View.extend({
-
-//   el: "<input type='file' class='file-input' multiple/>",
-
-//   events: {
-//     "change": "startFileUpload"
-//   },
-
-//   initialize: function(options) {
-//     this.parent = options.parent;
-//     this.fileId = "file-input-"+new Date().getTime();
-//     this.uploadUrlPath = options.uploadUrlPath || "/files/upload/";
-//   },
-
-//   render: function() {
-//     this.$el.attr("id", this.fileId);
-//     $(this.$el).appendTo('body');
-//   },
-
-//   showFilePicker: function() {
-//     this.$el.trigger("click");
-//   },
-
-//   startFileUpload: function(e) {
-//     var self = this;
-//     console.log(new Date().getTime());
-//     var currentTargetFile = e.currentTarget;
-
-//     _.each(currentTargetFile.files, function(e, i, l) {
-//       this.collection.add(
-//         new uploadFile({
-//           'size': e.size,
-//           'title': e.name,
-//           'type': e.type,
-//           'input_id': currentTargetFile.id,
-//           'file_idx': i,
-//           'progress': -1
-//         })
-//       );
-//     }, this);
-
-//     $(currentTargetFile).BigBoyUploader({
-//       urlPath: this.uploadUrlPath,
-//       onComplete: function() {
-//         console.log("All files completed");
-//         self.parent.trigger('upload-complete', self);
-//       },
-//       onFileStart: function(fileIdx) {
-//         var file = self.collection.findWhere({'input_id': self.fileId, 'file_idx': fileIdx});
-//         file.set({uploadStatus: -1, progress:0});
-//       },
-//       onFileComplete: function(key, fileIdx, result) {
-//         var file = self.collection.findWhere({'input_id': self.fileId, 'file_idx': fileIdx});
-//         var uploadStatus = result == true?1:0;
-//         file.set({progress: 100, key: key, uploadStatus: uploadStatus});
-
-//         console.log("File Completed " + key + " fileIdx " + fileIdx +
-//           " status " + result);
-//       },
-//       onProgress: function(key, fileIdx, progressPercent) {
-//         var file = self.collection.findWhere({'input_id': self.fileId, 'file_idx': fileIdx});
-//         file.set({progress: progressPercent});
-//       }
-//     });
-//   }
-// });
-
-var FileView = Backbone.View.extend({
 var UploadView = Backbone.View.extend({
 
     el: '<li class="row">',
@@ -92,7 +24,6 @@ var UploadView = Backbone.View.extend({
     },
 
     renderProgress: function(file, progress) {
-      // console.log(file);
       this.$el.find('span').html(progress);
     },
 
@@ -101,7 +32,7 @@ var UploadView = Backbone.View.extend({
     },
 
     showFile: function() {
-      app.router.navigate("files/"+this.model.get("id"), {"trigger": true});
+      // app.router.navigate("files/"+this.model.get("id"), {"trigger": true});
 
       return false;
     },
@@ -152,7 +83,7 @@ var UploadsView = Backbone.View.extend({
     },
 
     addOne: function(file) {
-      var view = new FileView({model: file});
+      var view = new UploadView({model: file});
       this.$(".upload-file-list").append(view.render().el);
     },
 
@@ -170,19 +101,22 @@ var UploadsView = Backbone.View.extend({
     },
 
     startUpload: function(link) {
+      var prefix = link.id+"/";
       var self = this;
       var currentTargetFile = this.fileTarget;
 
       _.each(currentTargetFile.files, function(e, i, l) {
+        var key = prefix+e.name;
         this.collection.add(
           new UploadFile({
+            'key': key,
             'size': e.size,
             'name': e.name,
             'type': e.type,
             'input_id': currentTargetFile.id,
             'file_idx': i,
             'progress': -1,
-            'created': null
+            'created_at': null
           })
         );
       }, this);
@@ -190,7 +124,7 @@ var UploadsView = Backbone.View.extend({
       $(currentTargetFile).BigBoyUploader({
         s3: this.s3,
         bucket: this.bucket,
-        prefix: link.id,
+        prefix: prefix,
         onComplete: function() {
           console.log("All files completed");
           self.app.trigger('upload::all::complete', self);
@@ -204,13 +138,10 @@ var UploadsView = Backbone.View.extend({
           var uploadStatus = result === true?1:0;
           file.set({progress: 100, key: key, uploadStatus: uploadStatus});
 
-          console.log("File Completed " + key + " fileIdx " + fileIdx +
-            " status " + result);
           if (result === true) {
             self.collection.remove(file);
             file.set("created", new Date().getTime());
             self.app.trigger("upload::file::complete", file);
-            // self.collection.add(file, {at:0});
           }
         },
         onProgress: function(key, fileIdx, progressPercent) {
