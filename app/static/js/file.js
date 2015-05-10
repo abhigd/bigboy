@@ -301,22 +301,26 @@ var LinkView = Backbone.View.extend({
 
     template: _.template($('#link-template').html()),
 
-    initialize: function() {
-      _.bindAll(this, 'render');
-      var files = new Files();
+    initialize: function(options) {
+      this.app = options.app;
 
-      var filesView = new FilesView({
-        app: this,
-        collection: files,
-        links: this.links,
-        el: linkView.el
+      this.files = new Files([], {link: this.model});
+
+      _.bindAll(this, 'render');
+
+      this.filesView = new FilesView({
+        app: this.app,
+        collection: this.files,
+        link: this.model,
+        el: this.el
       });
 
-      filesView.render();
     },
 
     render: function() {
       this.$el.html(this.template(this.model.toJSON()));
+      this.filesView.render();
+      this.files.fetch();
 
       return this;
     }
@@ -329,7 +333,8 @@ var LinksView = Backbone.View.extend({
 
     template: _.template($('#links-template').html()),
 
-    initialize: function() {
+    initialize: function(options) {
+      this.app = options.app;
       _.bindAll(this, 'render', 'addOne', 'removeOne');
 
       // this.collection.bind('sync', this.sync);
@@ -352,9 +357,9 @@ var LinksView = Backbone.View.extend({
       var idx = this.collection.indexOf(link);
 
       if (idx === 0) {
-        this.$(".file-list").prepend(view.render().el);
+        this.$(".links-list").prepend(view.render().el);
       } else {
-        this.$(".file-list").append(view.render().el);
+        this.$(".links-list").append(view.render().el);
       }
 
     },
